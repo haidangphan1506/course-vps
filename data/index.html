@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="vi"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>Bảng điều khiển dự án</title>
+<style>
+/* Layout: one fixed tab bar on top, one full-height frame below that holds the selected tool. */
+:root{--bg:#e9edf6;--bar:rgba(255,255,255,.78);--fg:#1c2230;--muted:#5d6678;--line:rgba(20,30,60,.12);--accent:#2f62d9;--seg:rgba(20,30,60,.08);--segon:#fff}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#11141b;--bar:rgba(28,32,44,.82);--fg:#eef0f5;--muted:#a0a8b8;--line:rgba(255,255,255,.12);--accent:#7ea2ff;--seg:rgba(255,255,255,.08);--segon:rgba(255,255,255,.16);color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#11141b;--bar:rgba(28,32,44,.82);--fg:#eef0f5;--muted:#a0a8b8;--line:rgba(255,255,255,.12);--accent:#7ea2ff;--seg:rgba(255,255,255,.08);--segon:rgba(255,255,255,.16);color-scheme:dark}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.4 Inter,-apple-system,BlinkMacSystemFont,system-ui,sans-serif;display:flex;flex-direction:column;overflow:hidden}
+.bar{flex:none;display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding-block:8px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));background:var(--bar);border-bottom:1px solid var(--line);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px)}
+.bar h1{margin:0;font-size:15px;font-weight:700;letter-spacing:-.01em;white-space:nowrap}
+.tabs{display:flex;gap:2px;padding:3px;border-radius:11px;background:var(--seg);max-width:100%;overflow-x:auto}
+.tabs button{font:inherit;font-weight:500;color:var(--fg);background:none;border:0;border-radius:8px;padding:6px 13px;cursor:pointer;white-space:nowrap}
+.tabs button[aria-selected="true"]{background:var(--segon);font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,.15)}
+.tabs button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.stage{flex:1;position:relative;min-height:0}
+iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:var(--bg)}
+iframe[hidden]{display:none}
+.ld{position:absolute;inset:0;display:grid;place-items:center;color:var(--muted);pointer-events:none}
+</style></head>
+<body>
+<div class="bar">
+  <h1>Bảng điều khiển dự án</h1>
+  <div class="tabs" role="tablist" aria-label="Dự án">
+    <button role="tab" id="t-course" aria-selected="true" data-k="course">Khoá học VPS Linux</button>
+    <button role="tab" id="t-tahoe" aria-selected="false" data-k="tahoe">Tahoe UI</button>
+    <button role="tab" id="t-api" aria-selected="false" data-k="api">API Route Checklist</button>
+    <button role="tab" id="t-results" aria-selected="false" data-k="results">Kết quả khoá học</button>
+    <button role="tab" id="t-vps" aria-selected="false" data-k="vps">Hướng dẫn VPS</button>
+  </div>
+</div>
+<div class="stage" id="stage"><div class="ld" id="ld">Đang tải…</div></div>
+<script>
+(function(){
+  var SRC={course:'course.html',tahoe:'tahoe.html',api:'api.html',results:'results.html',vps:'vps-guide.html'},frames={},tabs=[].slice.call(document.querySelectorAll('.tabs button')),stage=document.getElementById('stage'),ld=document.getElementById('ld');
+  function show(k){
+    tabs.forEach(function(b){b.setAttribute('aria-selected',b.dataset.k===k?'true':'false')});
+    if(!frames[k]){
+      var f=document.createElement('iframe');f.title=k;f.src=SRC[k];ld.hidden=false;
+      f.addEventListener('load',function(){ld.hidden=true});
+      stage.appendChild(f);frames[k]=f;
+    }
+    Object.keys(frames).forEach(function(x){frames[x].hidden=x!==k});
+    try{history.replaceState(null,'','#'+k)}catch(e){location.hash=k}
+  }
+  tabs.forEach(function(b){b.addEventListener('click',function(){show(b.dataset.k)})});
+  var h=(location.hash||'').slice(1);show(SRC[h]?h:'course');
+  window.addEventListener('hashchange',function(){var x=location.hash.slice(1);if(SRC[x])show(x)});
+})();
+</script>
+</body></html>

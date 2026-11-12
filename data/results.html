@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="vi"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Kết quả khoá học</title>
+<style>
+:root{--bg:#f4f6fb;--fg:#1c2230;--muted:#5d6678;--line:rgba(20,30,60,.12);--card:#fff;--ok:#1f8a4c;--bad:#c23b3b;--warn:#b7791f;--accent:#2f62d9}
+@media (prefers-color-scheme:dark){:root{--bg:#11141b;--fg:#eef0f5;--muted:#a0a8b8;--line:rgba(255,255,255,.12);--card:#1b1f2a;--ok:#4cc27e;--bad:#ef6b6b;--warn:#e7b04f;--accent:#7ea2ff}}
+*{box-sizing:border-box}
+body{margin:0;padding:20px;background:var(--bg);color:var(--fg);font:14px/1.45 Inter,-apple-system,system-ui,sans-serif}
+h1{font-size:18px;margin:0 0 4px}
+.sub{color:var(--muted);margin:0 0 16px}
+.sum{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.card b{display:block;font-size:20px}
+.card span{color:var(--muted);font-size:12px}
+table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+th,td{padding:9px 10px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12px;color:var(--muted);font-weight:600;background:rgba(127,127,127,.08)}
+td.n,th.n{text-align:right;white-space:nowrap}
+.grp{color:var(--muted);font-size:12px}
+.pill{display:inline-block;padding:1px 8px;border-radius:999px;font-size:12px;font-weight:600}
+.full{background:rgba(31,138,76,.14);color:var(--ok)}
+.part{background:rgba(183,121,31,.14);color:var(--warn)}
+.none{background:rgba(127,127,127,.14);color:var(--muted)}
+.bar{height:6px;border-radius:4px;background:rgba(127,127,127,.2);overflow:hidden;margin-top:4px;min-width:90px}
+.bar i{display:block;height:100%;background:var(--accent)}
+.note{color:var(--muted);font-size:12px;margin-top:12px}
+</style></head>
+<body>
+<h1>Kết quả khoá học VPS Linux</h1>
+<p class="sub" id="stamp"></p>
+<div class="sum" id="sum"></div>
+<table>
+  <thead><tr><th>Bài</th><th class="n">Quiz (điểm tốt nhất)</th><th class="n">Số lần làm</th><th>Lab</th><th class="n">Câu đánh dấu</th></tr></thead>
+  <tbody id="rows"></tbody>
+</table>
+<p class="note">Ảnh chụp tiến độ lấy từ tài khoản khoá học. Số liệu không tự cập nhật: muốn làm mới, gửi lại tiến độ để tôi cập nhật trang này.</p>
+<script type="application/json" id="progress">{"labs": {"c1": [true, true], "lb1": [true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true], "c5a": [true, true, true, true], "lb2": [true, true, true, true, true, true, true, true, true, true, true, true, true, true, true], "lb3": [true, true, false, true], "lb4": [true, true, true, true, true, true, true, true, true, true, true, false, false, false, false, true, true, false, false, false, false, false, true], "lb1-2": [true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true], "lb2-2": [true]}, "quiz": {"c2a": {}, "c1": {"0": 0, "1": 1, "2": 0, "3": 1, "4": 1, "5": 1, "6": 0, "7": 3, "8": 2, "9": 1, "10": 0, "11": 3}, "lb1": {"0": 1, "1": 0, "2": 3, "3": 2, "4": 1, "5": 0, "6": 3, "7": 2, "8": 1, "9": 0, "10": 3, "11": 2}, "c5a": {"0": 1, "1": 1, "2": 1, "3": 1, "4": 1, "5": 1, "6": 1, "7": 1, "8": 1, "9": 1, "10": 1, "11": 1, "12": 1}, "lb2": {"0": 2, "1": 1, "2": 0, "3": 3, "4": 2, "5": 1, "6": 0, "7": 3, "8": 2, "9": 1, "10": 0, "11": 3}, "lb3": {"0": 3, "1": 2, "2": 1, "3": 0, "4": 3, "5": 2, "6": 1, "7": 3, "8": 3, "9": 2, "10": 1, "11": 0}, "lb4": {"0": 0, "1": 3, "2": 2, "3": 1, "4": 0, "5": 3, "6": 2, "7": 1, "8": 0, "9": 3, "10": 2, "11": 1}, "lb1-2": {"0": 3, "1": 2, "2": 1, "3": 0, "4": 3, "5": 2}, "lb2-2": {"0": 0, "1": 3, "2": 2, "3": 1, "4": 0, "5": 3}, "lb3-2": {"0": 1, "1": 0, "2": 3, "3": 2, "4": 1, "5": 0}}, "debugs": {}, "hist": [{"l": "c1", "s": 12, "n": 12, "t": 1793118477473}, {"l": "lb1", "s": 12, "n": 12, "t": 1793185158897}, {"l": "c5a", "s": 11, "n": 13, "t": 1793285140765}, {"l": "c5a", "s": 13, "n": 13, "t": 1793285263837}, {"l": "lb2", "s": 10, "n": 12, "t": 1793291025360}, {"l": "lb2", "s": 10, "n": 12, "t": 1793634348775}, {"l": "lb3", "s": 10, "n": 12, "t": 1793636275104}, {"l": "lb4", "s": 12, "n": 12, "t": 1793717658050}, {"l": "lb2", "s": 12, "n": 12, "t": 1793719371379}, {"l": "lb1-2", "s": 5, "n": 6, "t": 1793804596198}, {"l": "lb1-2", "s": 6, "n": 6, "t": 1793804606002}, {"l": "lb2-2", "s": 6, "n": 6, "t": 1793973387657}, {"l": "lb3", "s": 6, "n": 6, "t": 1793973566806}, {"l": "lb3-2", "s": 5, "n": 6, "t": 1793974780788}, {"l": "lb3-2", "s": 6, "n": 6, "t": 1793974806400}], "wrong": {"lb1": {"6": 1, "7": 1}, "c5a": {"2": 1, "9": 1}, "lb2": {"0": 1, "9": 1, "10": 2}, "lb3": {"5": 1, "7": 1}, "lb4": {"2": 1}, "lb1-2": {"1": 1}, "lb2-2": {"0": 1}, "lb3-2": {"4": 1}}, "flag": {"lb1": {"6": true, "7": true}, "c5a": {"2": true, "9": true}, "lb2": {"9": true, "10": true}, "lb3": {"5": true, "7": true}, "lb4": {"2": true}, "lb1-2": {"1": true}, "lb2-2": {}, "lb3-2": {"4": true}}}</script>
+<script>
+(function(){
+  var D = JSON.parse(document.getElementById('progress').textContent);
+  var ORDER = [
+    ['c1','Linux và SSH','Nền tảng'],
+    ['lb1','Hệ thống file','Linux căn bản'],
+    ['lb1-2','Hệ thống file (phần 2)','Linux căn bản'],
+    ['lb2','Quyền và sở hữu','Linux căn bản'],
+    ['lb2-2','Quyền và sở hữu (phần 2)','Linux căn bản'],
+    ['lb3','Shell hằng ngày','Linux căn bản'],
+    ['lb3-2','Shell hằng ngày (phần 2)','Linux căn bản'],
+    ['lb4','Chuyển hướng và pipe','Linux căn bản'],
+    ['c5a','Docker cơ bản','Ứng dụng'],
+    ['c2a','Bảo mật: cổng và tường lửa','Nền tảng']
+  ];
+  var tQ=0, tQn=0, tL=0, tLn=0, nDone=0;
+  var rows = document.getElementById('rows');
+  ORDER.forEach(function(r){
+    var id=r[0], best=null, n=0, tries=0;
+    D.hist.forEach(function(x){ if(x.l===id){ tries++; if(best===null || x.s>best.s) best=x; } });
+    var labs = (D.labs[id]||[]), lt = labs.length, ld = labs.filter(Boolean).length;
+    var flags = Object.keys((D.flag[id]||{})).filter(function(k){return D.flag[id][k];}).length;
+    if(best){ tQ+=best.s; tQn+=best.n; nDone++; }
+    tL+=ld; tLn+=lt;
+    var quizCell = best ? (best.s+' / '+best.n+' <span class="pill '+(best.s===best.n?'full':'part')+'">'+(best.s===best.n?'đạt tối đa':'chưa tối đa')+'</span>') : '<span class="pill none">chưa làm</span>';
+    var labCell = lt ? (ld+' / '+lt+' <div class="bar"><i style="width:'+Math.round(ld/lt*100)+'%"></i></div>') : '<span class="pill none">chưa có</span>';
+    var tr=document.createElement('tr');
+    tr.innerHTML = '<td><div>'+r[1]+'</div><div class="grp">'+r[2]+'</div></td>'
+      + '<td class="n">'+quizCell+'</td>'
+      + '<td class="n">'+tries+'</td>'
+      + '<td>'+labCell+'</td>'
+      + '<td class="n">'+flags+'</td>';
+    rows.appendChild(tr);
+  });
+  var lastT = Math.max.apply(null, D.hist.map(function(x){return x.t;}));
+  var d = new Date(lastT);
+  var p=function(n){return (n<10?'0':'')+n;};
+  document.getElementById('stamp').textContent = 'Ảnh chụp lúc 08/11/2026 20:04 (giờ VN). Lần làm quiz gần nhất: '+p(d.getDate())+'/'+p(d.getMonth()+1)+'/'+d.getFullYear()+' '+p(d.getHours())+':'+p(d.getMinutes())+'.';
+  var s = document.getElementById('sum');
+  [
+    [tQ+' / '+tQn, 'Tổng điểm quiz tốt nhất'],
+    [nDone+' / '+ORDER.length, 'Bài đã làm quiz'],
+    [tL+' / '+tLn, 'Lab đã hoàn thành'],
+    [Math.round(tL/tLn*100)+'%', 'Tỷ lệ lab']
+  ].forEach(function(c){
+    var e=document.createElement('div'); e.className='card';
+    e.innerHTML='<b>'+c[0]+'</b><span>'+c[1]+'</span>'; s.appendChild(e);
+  });
+})();
+</script>
+</body></html>

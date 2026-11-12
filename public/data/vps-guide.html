@@ -1,0 +1,2228 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hướng dẫn setup VPS và đưa website lên mạng</title>
+<style>
+:root{--bg:#f3f5f9;--surface:#fff;--ink:#1d2330;--mute:#5d6678;--line:#d9dee8;--accent:#1f4e79;--code-bg:#0f1720;--code-fg:#dbe4ee;--ok:#1b7f46;--ok-soft:#e3f4ea;--warn:#a8530a;--warn-soft:#fbeedd;--sans:'Be Vietnam Pro',Inter,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;--mono:'JetBrains Mono',ui-monospace,Menlo,Consolas,monospace}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 var(--sans)}
+.wrap{display:grid;grid-template-columns:270px minmax(0,1fr);gap:24px;max-width:none;margin:0 auto;padding:20px 20px 60px;align-items:start}
+nav.toc{position:sticky;top:12px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 12px;max-height:calc(100vh - 24px);overflow:auto;font-size:13.5px}
+nav.toc h2{font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--mute);margin:0 0 8px}
+nav.toc a{display:block;color:var(--ink);text-decoration:none;padding:3px 6px;border-radius:6px}
+nav.toc a:hover{background:var(--bg)}
+nav.toc a.l2{padding-left:18px;color:var(--mute)}
+main{min-width:0}
+header.doc{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:26px 28px;margin-bottom:18px}
+header.doc h1{margin:0 0 6px;font-size:26px;color:var(--accent);letter-spacing:-.01em}
+header.doc p{margin:4px 0;color:var(--mute)}
+section{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:22px 26px;margin-bottom:16px;scroll-margin-top:12px}
+h2{font-size:21px;color:var(--accent);margin:0 0 12px}
+h3{font-size:17px;margin:22px 0 8px;color:var(--ink)}
+h4{font-size:15px;margin:16px 0 6px}
+p{margin:8px 0}
+ul,ol{margin:6px 0 10px 22px;padding:0}
+li{margin:3px 0}
+code{font-family:var(--mono);font-size:.88em;background:#e9edf3;padding:1px 5px;border-radius:4px}
+pre{font-family:var(--mono);font-size:13px;line-height:1.5;background:var(--code-bg);color:var(--code-fg);padding:12px 14px;border-radius:9px;overflow-x:auto;margin:10px 0;white-space:pre}
+pre .c{color:#7fb3e6}
+table{border-collapse:collapse;width:100%;margin:10px 0;font-size:14px}
+th,td{border:1px solid var(--line);padding:7px 10px;text-align:left;vertical-align:top}
+th{background:#eef2f7;font-size:12.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--mute)}
+.note{border-left:3px solid var(--accent);background:#eaf1f9;padding:9px 13px;border-radius:0 8px 8px 0;margin:10px 0;font-size:14.5px}
+.warn{border-color:var(--warn);background:var(--warn-soft)}
+.tip{border-color:var(--ok);background:var(--ok-soft)}
+.top{float:right;font-size:12.5px;margin-top:4px}
+.top a{color:var(--mute)}
+@media (max-width:860px){.wrap{grid-template-columns:1fr}nav.toc{position:static;max-height:none}}
+.qz{border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:12px 0}
+.qz .qn{font-size:12px;color:var(--mute);font-family:var(--mono)}
+.qz h4{margin:2px 0 8px}
+.qz .opts{display:grid;gap:6px}
+.qz button{font:inherit;text-align:left;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:7px 10px;cursor:pointer;color:var(--ink)}
+.qz button:hover:not(:disabled){border-color:var(--accent)}
+.qz button:disabled{cursor:default}
+.qz button.right{background:var(--ok-soft);border-color:var(--ok)}
+.qz button.wrong{background:#fbe3dd;border-color:#b3361b}
+.qz .why{font-size:14px;color:var(--mute);margin-top:6px;display:none}
+.qz .why.show{display:block}
+.score{font-weight:600;margin:10px 0;padding:10px 12px;border-radius:8px;background:var(--accent);color:#fff;display:none}
+.score.show{display:block}
+.lab{display:grid;grid-template-columns:24px minmax(0,1fr);gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;margin:8px 0}
+.lab.done{background:var(--ok-soft);border-color:transparent}
+.lab input{width:18px;height:18px;margin-top:4px}
+.lab .v{font-size:13.5px;color:var(--mute);margin-top:4px}
+.prog{font-weight:600;margin:6px 0 10px;color:var(--accent)}
+.rst{font:inherit;font-size:13px;padding:4px 10px;border-radius:7px;border:1px solid var(--line);background:var(--bg);cursor:pointer;margin-top:6px}
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Be+Vietnam+Pro:wght@400;500;600&family=JetBrains+Mono:wght@400;600;700&display=swap">
+<style id="theme">
+:root{
+  --bg:#e9edf6;--surface:rgba(255,255,255,.66);--surface2:rgba(255,255,255,.5);--ink:#1d1d1f;--mute:#5f6370;--line:rgba(0,0,0,.09);
+  --accent:#0a7cff;--accent-soft:rgba(10,124,255,.12);
+  --ok:#1f9d55;--ok-soft:rgba(31,157,85,.14);--warn:#b45f06;--warn-soft:rgba(240,150,40,.16);--bad:#d93a2b;--bad-soft:rgba(217,58,43,.13);
+  --code-bg:rgba(0,0,0,.06);--edge:rgba(255,255,255,.7);--hi:rgba(255,255,255,.85);
+  --glass-strong:rgba(255,255,255,.82);
+  --shadow:0 10px 30px rgba(30,40,80,.12),0 1px 3px rgba(30,40,80,.08);
+  --bgimg:radial-gradient(1200px 700px at 10% -10%,#a9c8ff 0%,transparent 60%),radial-gradient(900px 600px at 100% 0%,#f7c6a3 0%,transparent 55%),radial-gradient(1000px 800px at 60% 110%,#c7b6ff 0%,transparent 60%);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#12131a;--surface:rgba(34,36,46,.6);--surface2:rgba(255,255,255,.06);--ink:#f2f2f5;--mute:#a3a8b5;--line:rgba(255,255,255,.1);
+  --accent:#3d9bff;--accent-soft:rgba(61,155,255,.2);
+  --ok:#4cd384;--ok-soft:rgba(76,211,132,.18);--warn:#f5a84f;--warn-soft:rgba(245,168,79,.16);--bad:#ff6b5e;--bad-soft:rgba(255,107,94,.18);
+  --code-bg:rgba(255,255,255,.1);--edge:rgba(255,255,255,.12);--hi:rgba(255,255,255,.14);--glass-strong:rgba(40,42,54,.86);
+  --shadow:0 10px 30px rgba(0,0,0,.35),0 1px 3px rgba(0,0,0,.3);
+  --bgimg:radial-gradient(1200px 700px at 10% -10%,#1d3a73 0%,transparent 60%),radial-gradient(900px 600px at 100% 0%,#5a3424 0%,transparent 55%),radial-gradient(1000px 800px at 60% 110%,#3a2a6e 0%,transparent 60%);
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#12131a;--surface:rgba(34,36,46,.6);--surface2:rgba(255,255,255,.06);--ink:#f2f2f5;--mute:#a3a8b5;--line:rgba(255,255,255,.1);
+  --accent:#3d9bff;--accent-soft:rgba(61,155,255,.2);
+  --ok:#4cd384;--ok-soft:rgba(76,211,132,.18);--warn:#f5a84f;--warn-soft:rgba(245,168,79,.16);--bad:#ff6b5e;--bad-soft:rgba(255,107,94,.18);
+  --code-bg:rgba(255,255,255,.1);--edge:rgba(255,255,255,.12);--hi:rgba(255,255,255,.14);--glass-strong:rgba(40,42,54,.86);
+  --shadow:0 10px 30px rgba(0,0,0,.35),0 1px 3px rgba(0,0,0,.3);
+  --bgimg:radial-gradient(1200px 700px at 10% -10%,#1d3a73 0%,transparent 60%),radial-gradient(900px 600px at 100% 0%,#5a3424 0%,transparent 55%),radial-gradient(1000px 800px at 60% 110%,#3a2a6e 0%,transparent 60%);
+  color-scheme:dark}
+body{margin:0;background:var(--bgimg),var(--bg);background-attachment:fixed;color:var(--ink);font:14.5px/1.55 Inter,'Be Vietnam Pro',-apple-system,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+.wrap{grid-template-columns:290px minmax(0,1fr);gap:20px;max-width:none;padding:16px 20px}
+.glass{background:var(--surface);-webkit-backdrop-filter:blur(26px) saturate(1.7);backdrop-filter:blur(26px) saturate(1.7);border:1px solid var(--edge);border-radius:18px;box-shadow:inset 0 1px 0 var(--hi),var(--shadow)}
+nav.toc{background:var(--surface);-webkit-backdrop-filter:blur(26px) saturate(1.7);backdrop-filter:blur(26px) saturate(1.7);border:1px solid var(--edge);border-radius:18px;box-shadow:inset 0 1px 0 var(--hi),var(--shadow);padding:12px;top:16px;max-height:calc(100vh - 32px)}
+nav.toc h2{font:600 11px var(--mono);letter-spacing:.07em;text-transform:uppercase;color:var(--mute);margin:6px 8px 8px}
+nav.toc a{display:block;color:var(--ink);text-decoration:none;padding:6px 10px;border-radius:10px;font-size:13.5px;margin:1px 0}
+nav.toc a:hover{background:var(--line)}
+nav.toc a.l2{padding-left:20px;color:var(--mute);font-size:12.5px}
+header.doc{background:var(--surface);-webkit-backdrop-filter:blur(26px) saturate(1.7);backdrop-filter:blur(26px) saturate(1.7);border:1px solid var(--edge);border-radius:18px;box-shadow:inset 0 1px 0 var(--hi),var(--shadow);padding:22px 26px;margin-bottom:16px}
+header.doc h1::before{content:"Hướng dẫn · Tài liệu PDF";display:block;font:600 12px var(--mono);color:var(--accent);letter-spacing:.04em;text-transform:uppercase;margin-bottom:6px}
+header.doc h1{font-size:26px;color:var(--ink);margin:0 0 6px;letter-spacing:-.02em}
+header.doc p{color:var(--mute);margin:2px 0}
+section{background:var(--surface);-webkit-backdrop-filter:blur(26px) saturate(1.7);backdrop-filter:blur(26px) saturate(1.7);border:1px solid var(--edge);border-radius:18px;box-shadow:inset 0 1px 0 var(--hi),var(--shadow);padding:20px 24px;margin-bottom:16px}
+h2{font-size:21px;color:var(--ink);margin:0 0 12px;letter-spacing:-.02em}
+h3{font-size:16px;color:var(--ink);margin:20px 0 8px}
+h4{font-size:14.5px;color:var(--ink)}
+code{font-family:var(--mono);font-size:.86em;background:var(--code-bg);padding:1px 6px;border-radius:6px}
+pre{background:rgba(8,10,16,.9);color:#dfe7f0;border-radius:12px;padding:12px 14px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.06);font-size:12.8px}
+pre .c{color:#7fb8f0}
+table{border-collapse:separate;border-spacing:0;width:100%;margin:10px 0;font-size:13.5px;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+th,td{border-bottom:1px solid var(--line);border-right:0;padding:8px 11px}
+tr:last-child td{border-bottom:0}
+th{background:var(--surface2);font:600 11px var(--mono);letter-spacing:.04em;text-transform:uppercase;color:var(--mute)}
+.note{border-left:3px solid var(--accent);background:var(--accent-soft);border-radius:0 12px 12px 0;padding:10px 14px;font-size:14px}
+.note.warn{border-color:var(--warn);background:var(--warn-soft)}
+.note.tip{border-color:var(--ok);background:var(--ok-soft)}
+ol,ul{color:var(--ink)}
+.qz{background:var(--surface2);border:1px solid var(--edge);border-radius:14px;padding:14px 16px;margin:12px 0;box-shadow:inset 0 1px 0 var(--hi)}
+.qz .qn{font:600 11px var(--mono);color:var(--accent);letter-spacing:.04em;text-transform:uppercase}
+.qz h4{font-size:15px;margin:4px 0 10px}
+.qz button{background:var(--glass-strong);border:1px solid var(--line);border-radius:10px;color:var(--ink);font:inherit;padding:8px 12px}
+.qz button:hover:not(:disabled){border-color:var(--accent)}
+.qz button.right{background:var(--ok-soft);border-color:var(--ok)}
+.qz button.wrong{background:var(--bad-soft);border-color:var(--bad)}
+.qz .why{color:var(--mute);font-size:13.5px}
+.score{background:linear-gradient(90deg,var(--accent),#7a5cff);color:#fff;border-radius:12px;padding:11px 14px;font-weight:600}
+.lab{background:var(--surface2);border:1px solid var(--edge);border-radius:14px;box-shadow:inset 0 1px 0 var(--hi);padding:11px 14px;margin:8px 0}
+.lab.done{background:var(--ok-soft);border-color:transparent}
+.lab input{accent-color:var(--accent)}
+.lab .v{color:var(--mute)}
+.prog{color:var(--accent);font-weight:600}
+.rst{background:var(--glass-strong);border:1px solid var(--line);border-radius:9px;color:var(--ink);font:inherit;font-size:13px;padding:5px 12px;cursor:pointer}
+.rst:hover{border-color:var(--accent)}
+@media (max-width:860px){.wrap{grid-template-columns:1fr}nav.toc{position:static;max-height:none}}
+.kicker{font:600 12px var(--mono);color:var(--accent);text-transform:uppercase;letter-spacing:.04em;margin:4px 0 4px}
+.tabs{display:inline-flex;gap:2px;padding:3px;border-radius:12px;background:var(--line);margin:6px 0 16px;max-width:100%;flex-wrap:wrap}
+.tabs button{border:0;border-radius:9px;padding:6px 14px;font:inherit;font-size:13.5px;font-weight:500;color:var(--ink);background:none;cursor:pointer}
+.tabs button.on{background:var(--glass-strong);box-shadow:0 1px 3px rgba(0,0,0,.14);font-weight:600}
+.panel.lab,.panel.quiz{border:0;background:none;padding:0;margin:0;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none}
+.labrow{display:grid;grid-template-columns:24px minmax(0,1fr);gap:10px;align-items:start;background:var(--surface2);border:1px solid var(--edge);border-radius:14px;box-shadow:inset 0 1px 0 var(--hi);padding:11px 14px;margin:8px 0;cursor:pointer}
+.labrow.done{background:var(--ok-soft);border-color:transparent}
+.labrow input{accent-color:var(--accent);width:18px;height:18px;margin-top:3px}
+.labrow .v{color:var(--mute);font-size:13.5px}
+.pager{display:flex;justify-content:space-between;gap:10px;margin-top:22px;flex-wrap:wrap}
+.pg-btn{display:inline-block;max-width:48%;padding:8px 14px;border-radius:999px;background:var(--glass-strong);border:1px solid var(--line);color:var(--ink);text-decoration:none;font-size:13.5px}
+.pg-btn:hover{border-color:var(--accent)}
+nav.toc .grp{font:600 11px var(--mono);letter-spacing:.07em;text-transform:uppercase;color:var(--mute);margin:12px 8px 4px}
+nav.toc a{display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:6px;align-items:center}
+nav.toc a.on{background:var(--accent);color:#fff}
+nav.toc a .no{font:12px var(--mono);color:var(--mute)}
+nav.toc a.on .no,nav.toc a.on .pg{color:rgba(255,255,255,.9)}
+nav.toc a .nm{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+nav.toc a .pg{font:11px var(--mono);color:var(--mute);white-space:nowrap}
+nav.toc a .pg.full{color:var(--ok);font-weight:700}
+nav.toc .tot{font:12px var(--mono);color:var(--mute);margin:14px 8px 4px;border-top:1px solid var(--line);padding-top:10px}
+nav.toc{overflow:auto}
+.qz.adv,.labrow.adv{border-left:3px solid var(--warn)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav class="toc" id="toc"><h2>Mục lục</h2><div id="navList"></div></nav>
+<main>
+<header class="doc">
+<h1>Hướng dẫn setup VPS và đưa website lên mạng</h1>
+<p>Phiên bản chi tiết: từ lúc nhận VPS trống đến khi website chạy HTTPS với tên miền riêng, có cơ sở dữ liệu, quy trình deploy, backup và giám sát.</p>
+<p>Áp dụng cho Ubuntu 22.04 / 24.04 LTS (Debian tương tự). Thời gian ước tính: 1,5 - 3 giờ cho lần đầu.</p>
+</header>
+
+<section id="s0">
+<h2>0. Cách sử dụng tài liệu</h2>
+<h3 id="s0-1">0.1. Quy ước</h3>
+<table><tr><th>Ký hiệu</th><th>Ý nghĩa</th></tr>
+<tr><td><code>tutor.haiphan.org</code></td><td>Tên miền site dùng trong tài liệu (domain gốc haiphan.org mua tại Cloudflare). Thay nếu bạn dùng domain khác.</td></tr>
+<tr><td><code>102.245.237.2</code></td><td>Địa chỉ IPv4 public của VPS. Thay nếu bạn dùng VPS khác.</td></tr>
+<tr><td><code>haidang</code></td><td>Tên user thường dùng để vận hành (bạn có thể đặt tên khác).</td></tr>
+<tr><td><code>myapp</code></td><td>Tên ứng dụng / thư mục dự án.</td></tr>
+<tr><td>[LOCAL]</td><td>Lệnh chạy trên máy cá nhân của bạn.</td></tr>
+<tr><td>[VPS]</td><td>Lệnh chạy trên VPS (sau khi SSH vào).</td></tr>
+</table>
+<h3 id="s0-2">0.2. Thuật ngữ nhanh</h3>
+<table><tr><th>Thuật ngữ</th><th>Giải thích ngắn</th></tr>
+<tr><td>VPS</td><td>Máy chủ ảo chạy Linux mà bạn có toàn quyền quản trị.</td></tr>
+<tr><td>SSH</td><td>Giao thức đăng nhập điều khiển máy chủ từ xa qua dòng lệnh, có mã hóa.</td></tr>
+<tr><td>DNS / bản ghi A</td><td>Dịch tên miền thành IP; bản ghi A trỏ tên miền tới IPv4.</td></tr>
+<tr><td>Nginx</td><td>Web server: phục vụ file tĩnh, proxy request tới ứng dụng, xử lý HTTPS.</td></tr>
+<tr><td>Reverse proxy</td><td>Nginx đứng trước ứng dụng Node, nhận request từ Internet rồi chuyển vào cổng nội bộ.</td></tr>
+<tr><td>PM2</td><td>Trình quản lý tiến trình Node.js: tự khởi động lại khi app lỗi hoặc VPS reboot.</td></tr>
+<tr><td>TLS/SSL, HTTPS</td><td>Mã hóa kết nối giữa trình duyệt và server, cần chứng chỉ (Let's Encrypt miễn phí).</td></tr>
+<tr><td>Firewall (UFW)</td><td>Chặn mọi cổng mạng không cần thiết, chỉ cho phép cổng bạn mở.</td></tr>
+<tr><td>Swap</td><td>Vùng đĩa dùng làm RAM dự phòng, tránh bị kill khi hết RAM.</td></tr>
+<tr><td>CI/CD</td><td>Quy trình tự động build/test/deploy khi đẩy code lên Git.</td></tr>
+</table>
+<h3 id="s0-3">0.3. Những sai lầm phổ biến của người mới</h3>
+<ul>
+<li>Chạy mọi thứ bằng root và để đăng nhập bằng mật khẩu, dễ bị dò mật khẩu chỉ sau vài giờ.</li>
+<li>Mở cổng database (5432, 3306, 6379...) ra Internet.</li>
+<li>Commit file .env hoặc private key lên Git.</li>
+<li>Không bật firewall, hoặc bật firewall nhưng quên mở SSH nên tự khóa mình.</li>
+<li>Không có backup, chỉ nhận ra khi đã mất dữ liệu.</li>
+<li>Sửa file cấu hình Nginx nhưng quên chạy <code>nginx -t</code> trước khi reload.</li>
+<li>Build Next.js trên VPS 1 GB RAM không có swap, tiến trình bị kill.</li>
+</ul>
+</section>
+
+<section id="s1">
+<h2>1. Tổng quan quy trình</h2>
+<table><tr><th>Giai đoạn</th><th>Việc cần làm</th><th>Mục đích</th><th>Thời gian</th></tr>
+<tr><td>A. Chuẩn bị</td><td>Thông tin VPS, domain, SSH key</td><td>Có đủ đầu vào</td><td>10 phút</td></tr>
+<tr><td>B. Hardening</td><td>Update, user riêng, SSH key, UFW, Fail2ban</td><td>Chống dò mật khẩu, giảm bề mặt tấn công</td><td>20 phút</td></tr>
+<tr><td>C. Domain</td><td>Trỏ bản ghi DNS về IP VPS</td><td>Truy cập bằng tên miền</td><td>5 phút + chờ</td></tr>
+<tr><td>D. Web server</td><td>Cài Nginx, server block</td><td>Phục vụ web / reverse proxy</td><td>15 phút</td></tr>
+<tr><td>E. Deploy app</td><td>Static, Node.js + PM2 hoặc Docker</td><td>Đưa code chạy thật</td><td>20-40 phút</td></tr>
+<tr><td>F. Database</td><td>PostgreSQL / MySQL / Redis (nếu cần)</td><td>Lưu dữ liệu ứng dụng</td><td>15 phút</td></tr>
+<tr><td>G. HTTPS</td><td>Certbot Let's Encrypt</td><td>Mã hóa, SEO, tin cậy</td><td>10 phút</td></tr>
+<tr><td>H. Vận hành</td><td>Log, backup, cập nhật, monitor</td><td>Ổn định lâu dài</td><td>30 phút</td></tr>
+</table>
+<pre>Người dùng -> DNS (tutor.haiphan.org -> 102.245.237.2) -> VPS cổng 443 (Nginx + SSL)
+                                                    |
+                     +------------------------------+---------------------+
+                     |                                                     |
+        File tĩnh (/var/www/tutor.haiphan.org)        Reverse proxy -> 127.0.0.1:3000 (Next.js)
+                                                                      -> 127.0.0.1:4000 (NestJS API)
+                                                                               |
+                                                                      127.0.0.1:5432 (PostgreSQL)</pre>
+<div class="note"><b>Nguyên tắc xuyên suốt:</b>
+<ul>
+<li>Chỉ Nginx được nhận kết nối từ Internet (cổng 80/443) cùng SSH. Ứng dụng và database chỉ lắng nghe ở 127.0.0.1.</li>
+<li>Mỗi thứ một quyền tối thiểu: user riêng cho vận hành, user riêng cho database.</li>
+<li>Mọi thay đổi cấu hình đều kiểm tra trước khi áp dụng (<code>sshd -t</code>, <code>nginx -t</code>).</li>
+<li>Có đường lui: giữ phiên SSH cũ, có backup, có rollback khi deploy.</li>
+</ul>
+Lưu ý: mọi lệnh giả định Ubuntu. Với CentOS/AlmaLinux/Rocky thay apt bằng dnf và ufw bằng firewalld.</div>
+</section>
+
+<section id="s2">
+<h2>2. Chuẩn bị</h2>
+<h3>2.1. Thông tin cần có</h3>
+<ul>
+<li>IP public của VPS (IPv4, có thể có IPv6).</li>
+<li>Tài khoản root và mật khẩu (hoặc SSH key nhà cung cấp gửi).</li>
+<li>Tên miền và quyền quản lý DNS (Cloudflare, Mắt Bão, PA Vietnam, Namecheap...).</li>
+<li>Source code website, tốt nhất đã đẩy lên Git (GitHub/GitLab).</li>
+<li>Máy cá nhân có terminal: Linux/macOS dùng sẵn; Windows 10/11 dùng PowerShell hoặc Windows Terminal (đã tích hợp ssh).</li>
+</ul>
+<h3>2.2. Chọn cấu hình VPS tham khảo</h3>
+<table><tr><th>Loại website</th><th>RAM</th><th>CPU</th><th>Ổ đĩa</th><th>Ghi chú</th></tr>
+<tr><td>Static / landing page</td><td>512 MB - 1 GB</td><td>1 vCPU</td><td>10 GB</td><td>Nginx là đủ</td></tr>
+<tr><td>Node.js nhỏ (Next.js + API)</td><td>2 GB</td><td>1-2 vCPU</td><td>20-40 GB</td><td>Nên thêm swap; build Next.js tốn RAM</td></tr>
+<tr><td>Nhiều service + database</td><td>4 GB trở lên</td><td>2 vCPU</td><td>40-80 GB</td><td>Cân nhắc Docker Compose</td></tr>
+</table>
+<p>Với người dùng ở Việt Nam, chọn nhà cung cấp có node tại Việt Nam, Singapore hoặc Hồng Kông để độ trễ thấp. Chọn Ubuntu LTS (22.04 hoặc 24.04) vì tài liệu và cộng đồng nhiều nhất.</p>
+<h3>2.3. Tạo SSH key trên máy cá nhân (nếu chưa có)</h3>
+<p>Private key giữ bí mật tuyệt đối; public key đưa lên VPS. Nên đặt passphrase.</p>
+<pre><span class="c"># [LOCAL]</span>
+ssh-keygen -t ed25519 -C "email-cua-ban@example.com"
+<span class="c"># Enter để dùng đường dẫn mặc định ~/.ssh/id_ed25519, nhập passphrase</span>
+
+cat ~/.ssh/id_ed25519.pub          <span class="c"># public key: một dòng bắt đầu bằng ssh-ed25519</span></pre>
+<div class="note tip">Mẹo Windows PowerShell: <code>type $env:USERPROFILE\.ssh\id_ed25519.pub</code></div>
+<h3>2.4. Cấu hình ~/.ssh/config để gõ lệnh ngắn hơn</h3>
+<pre><span class="c"># [LOCAL] file ~/.ssh/config</span>
+Host myvps
+    HostName 102.245.237.2
+    User haidang
+    IdentityFile ~/.ssh/id_ed25519
+    ServerAliveInterval 60</pre>
+<p>Sau đó chỉ cần gõ <code>ssh myvps</code>.</p>
+</section>
+
+<section id="s3">
+<h2>3. Kết nối VPS lần đầu và kiểm tra hệ thống</h2>
+<h3>3.1. Đăng nhập bằng root</h3>
+<pre><span class="c"># [LOCAL]</span>
+ssh root@102.245.237.2
+<span class="c"># Lần đầu sẽ hỏi xác nhận fingerprint của server -> gõ yes</span></pre>
+<p>Nếu nhà cung cấp gửi private key thay vì mật khẩu, thêm <code>-i đường_dẫn_key</code>. Lỗi <i>Permission denied</i> thường do sai mật khẩu, sai key, hoặc nhà cung cấp chưa bật đăng nhập root bằng mật khẩu.</p>
+<h3>3.2. Xem thông tin máy</h3>
+<pre><span class="c"># [VPS]</span>
+lsb_release -a            <span class="c"># phiên bản hệ điều hành</span>
+uname -r                  <span class="c"># phiên bản kernel</span>
+nproc                     <span class="c"># số CPU</span>
+free -h                   <span class="c"># RAM và swap</span>
+df -h /                   <span class="c"># dung lượng ổ đĩa</span>
+ip -br a                  <span class="c"># địa chỉ IP các card mạng</span></pre>
+<p>Kết quả mong đợi (ví dụ):</p>
+<pre>Description:     Ubuntu 24.04 LTS
+2                                       &lt;- 2 vCPU
+                 total    used    free
+Mem:           1.9Gi    180Mi   1.5Gi
+Swap:             0B       0B      0B   &lt;- chưa có swap
+/dev/vda1         25G    2.1G     23G</pre>
+</section>
+
+<section id="s4">
+<h2>4. Cập nhật hệ thống và cấu hình cơ bản</h2>
+<h3>4.1. Update gói và cài công cụ nền tảng</h3>
+<pre><span class="c"># [VPS] với quyền root</span>
+apt update &amp;&amp; apt upgrade -y
+apt install -y curl wget git ufw fail2ban unzip htop ncdu nano ca-certificates gnupg software-properties-common</pre>
+<p>Các gói thêm gồm công cụ tải file (curl, wget), Git, firewall (ufw), chống dò mật khẩu (fail2ban), theo dõi tài nguyên (htop) và xem dung lượng thư mục (ncdu).</p>
+<div class="note warn">Nếu apt báo <i>Could not get lock</i>, VPS đang tự chạy cập nhật nền. Chờ 1-2 phút rồi chạy lại, không xóa file lock.</div>
+<h3>4.2. Timezone, hostname, locale</h3>
+<pre>timedatectl set-timezone Asia/Ho_Chi_Minh
+timedatectl                         <span class="c"># kiểm tra giờ hiện tại và NTP đang bật</span>
+hostnamectl set-hostname my-vps     <span class="c"># tùy chọn</span></pre>
+<p>Đồng hồ chính xác quan trọng vì chứng chỉ SSL, log và cron đều phụ thuộc vào thời gian.</p>
+<h3>4.3. Khởi động lại nếu cần</h3>
+<pre>ls /var/run/reboot-required &amp;&amp; reboot    <span class="c"># chỉ reboot khi hệ thống yêu cầu</span></pre>
+<p>Đợi khoảng 30-60 giây rồi SSH lại.</p>
+</section>
+
+<section id="s5">
+<h2>5. Tạo user riêng và bảo mật SSH</h2>
+<p>Không nên chạy website hoặc thao tác hằng ngày bằng root. Tạo user thường có quyền sudo.</p>
+<h3>5.1. Tạo user haidang</h3>
+<pre><span class="c"># [VPS] root</span>
+adduser haidang                    <span class="c"># nhập mật khẩu mạnh</span>
+usermod -aG sudo haidang
+id haidang                         <span class="c"># phải thấy nhóm sudo</span></pre>
+<h3>5.2. Đưa SSH key cho user haidang</h3>
+<p><b>Cách 1</b> (từ máy cá nhân, đơn giản nhất):</p>
+<pre><span class="c"># [LOCAL]</span>
+ssh-copy-id haidang@102.245.237.2</pre>
+<p><b>Cách 2</b> (thủ công, dùng khi máy không có ssh-copy-id, ví dụ Windows):</p>
+<pre><span class="c"># [VPS] root</span>
+mkdir -p /home/haidang/.ssh
+nano /home/haidang/.ssh/authorized_keys      <span class="c"># dán public key, mỗi key một dòng</span>
+chown -R haidang:haidang /home/haidang/.ssh
+chmod 700 /home/haidang/.ssh
+chmod 600 /home/haidang/.ssh/authorized_keys</pre>
+<p>Mở terminal mới và kiểm tra:</p>
+<pre><span class="c"># [LOCAL]</span>
+ssh haidang@102.245.237.2
+<span class="c"># [VPS] sau khi vào</span>
+sudo whoami                      <span class="c"># nhập mật khẩu haidang, kết quả phải là: root</span></pre>
+<div class="note tip">Nếu vẫn bị hỏi mật khẩu khi SSH bằng key, nguyên nhân gần như luôn là sai quyền (.ssh phải 700, authorized_keys phải 600) hoặc sai chủ sở hữu (phải là haidang).</div>
+<h3>5.3. Khóa đăng nhập root và đăng nhập bằng mật khẩu</h3>
+<div class="note warn"><b>Chỉ làm bước này SAU KHI</b> đã đăng nhập thành công bằng user haidang + SSH key, và GIỮ NGUYÊN phiên root cũ đang mở để phòng khi cấu hình sai.</div>
+<pre><span class="c"># [VPS]</span>
+sudo nano /etc/ssh/sshd_config
+
+PermitRootLogin no
+PasswordAuthentication no
+PubkeyAuthentication yes
+KbdInteractiveAuthentication no
+MaxAuthTries 3
+LoginGraceTime 30
+
+sudo sshd -t                       <span class="c"># kiểm tra cú pháp: không in gì là đúng</span>
+sudo systemctl restart ssh</pre>
+<table><tr><th>Tùy chọn</th><th>Ý nghĩa</th></tr>
+<tr><td>PermitRootLogin no</td><td>Cấm đăng nhập trực tiếp bằng root</td></tr>
+<tr><td>PasswordAuthentication no</td><td>Chỉ cho đăng nhập bằng SSH key, vô hiệu hóa dò mật khẩu</td></tr>
+<tr><td>MaxAuthTries 3</td><td>Tối đa 3 lần thử trong một kết nối</td></tr>
+<tr><td>LoginGraceTime 30</td><td>Phải hoàn tất đăng nhập trong 30 giây</td></tr>
+</table>
+<p>Ubuntu 22.04+ có thể có file trong <code>/etc/ssh/sshd_config.d/</code> ghi đè cài đặt. Kiểm tra giá trị hiệu lực:</p>
+<pre>sudo sshd -T | grep -Ei "permitrootlogin|passwordauthentication"
+<span class="c"># Kết quả mong đợi:</span>
+permitrootlogin no
+passwordauthentication no</pre>
+<p>Cuối cùng, mở terminal thứ ba để xác nhận: <code>ssh root@102.245.237.2</code> phải bị từ chối, còn <code>ssh haidang@102.245.237.2</code> vẫn vào bình thường.</p>
+<h3>5.4. Đổi cổng SSH (tùy chọn)</h3>
+<p>Đổi cổng chỉ giúp giảm nhiễu log, không phải biện pháp bảo mật thực chất. Ubuntu 24.04 dùng socket activation (ssh.socket) nên việc đổi cổng phức tạp hơn; người mới có thể bỏ qua.</p>
+</section>
+
+<section id="s6">
+<h2>6. Firewall (UFW), Fail2ban và tự cập nhật bảo mật</h2>
+<p>Ba lớp bảo vệ: UFW chặn cổng thừa, Fail2ban chặn kẻ dò mật khẩu, unattended-upgrades tự vá lỗi hệ thống.</p>
+<h3>6.1. Firewall hoạt động như thế nào</h3>
+<pre>Gói tin đến VPS
+      |
+      v
+Thuộc kết nối đã được chấp nhận trước đó? --có--> cho qua (firewall có trạng thái)
+      | không
+      v
+Duyệt danh sách rule từ TRÊN XUỐNG, rule đầu tiên khớp sẽ được áp dụng
+      | không rule nào khớp
+      v
+Chính sách mặc định (default): với incoming là deny -> gói tin bị chặn</pre>
+<ul>
+<li><b>Incoming / outgoing:</b> incoming là kết nối từ ngoài vào VPS; outgoing là VPS chủ động gọi ra ngoài (apt update, git clone, gọi API).</li>
+<li><b>Chính sách mặc định:</b> hành động khi không rule nào khớp. Cách an toàn là chặn hết, chỉ mở cái cần (whitelist).</li>
+<li><b>Firewall có trạng thái:</b> gói tin trả lời cho kết nối do VPS khởi tạo, hoặc thuộc phiên SSH đang mở, tự động được cho qua.</li>
+</ul>
+<h3>6.2. Phân tích từng lệnh cấu hình UFW</h3>
+<h4>Lệnh 1: chặn chiều vào mặc định</h4>
+<pre>sudo ufw default deny incoming</pre>
+<table><tr><th>Thành phần</th><th>Ý nghĩa</th></tr>
+<tr><td>sudo</td><td>Chạy với quyền quản trị, vì cấu hình firewall cần root</td></tr>
+<tr><td>ufw</td><td>Chương trình quản lý firewall</td></tr>
+<tr><td>default</td><td>Đặt chính sách mặc định</td></tr>
+<tr><td>deny</td><td>Chặn và bỏ qua gói tin, không phản hồi gì cho phía gửi</td></tr>
+<tr><td>incoming</td><td>Áp dụng cho kết nối từ ngoài vào VPS</td></tr>
+</table>
+<p>Lệnh này chưa có tác dụng ngay cho đến khi <code>ufw enable</code>. <code>reject</code> gửi lại thông báo từ chối; <code>deny</code> im lặng, làm chậm việc dò quét. VPS thường dùng deny.</p>
+<h4>Lệnh 2: cho phép chiều ra</h4>
+<pre>sudo ufw default allow outgoing</pre>
+<p>Nếu chặn chiều này, apt update, certbot (liên lạc Let's Encrypt), gọi API bên thứ ba, gửi email đều hỏng.</p>
+<h4>Lệnh 3: cho phép SSH kèm giới hạn tốc độ</h4>
+<pre>sudo ufw limit OpenSSH</pre>
+<table><tr><th>Thành phần</th><th>Ý nghĩa</th></tr>
+<tr><td>limit</td><td>Giống allow nhưng chặn tạm IP mở từ 6 kết nối trở lên tới cổng này trong 30 giây</td></tr>
+<tr><td>OpenSSH</td><td>Tên application profile, thực chất là cổng 22/tcp. Xem: <code>sudo ufw app list</code>, <code>sudo ufw app info OpenSSH</code></td></tr>
+</table>
+<table><tr><th>Lệnh</th><th>Cổng</th><th>Giới hạn tốc độ</th><th>Khi nào dùng</th></tr>
+<tr><td>ufw allow OpenSSH</td><td>22/tcp</td><td>Không</td><td>Tự động hóa bằng nhiều kết nối liên tiếp</td></tr>
+<tr><td>ufw limit OpenSSH</td><td>22/tcp</td><td>Có</td><td>Khuyến nghị cho SSH thông thường</td></tr>
+<tr><td>ufw limit 2222/tcp</td><td>2222/tcp</td><td>Có</td><td>Khi đã đổi cổng SSH sang 2222</td></tr>
+</table>
+<div class="note warn">Nếu script deploy hoặc CI mở rất nhiều kết nối SSH liên tiếp từ cùng một IP (ví dụ GitHub Actions), rule limit có thể chặn nhầm. Khi đó chuyển sang allow cho IP nguồn hoặc allow thường.</div>
+<h4>Lệnh 4 và 5: mở cổng web</h4>
+<pre>sudo ufw allow 80/tcp
+sudo ufw allow 443/tcp</pre>
+<p>Thiếu phần <code>/tcp</code> thì UFW mở cho cả TCP lẫn UDP, rộng hơn mức cần. Nếu sau này bật HTTP/3 (QUIC, UDP), thêm <code>sudo ufw allow 443/udp</code>.</p>
+<p>Sau khi cài Nginx có thể dùng hồ sơ ứng dụng: <code>'Nginx HTTP'</code> (80/tcp), <code>'Nginx HTTPS'</code> (443/tcp), <code>'Nginx Full'</code> (cả hai). Dấu nháy đơn bắt buộc vì tên có dấu cách.</p>
+<h4>Lệnh 6: bật firewall</h4>
+<pre>sudo ufw enable
+
+<span class="c"># Kết quả mong đợi:</span>
+Command may disrupt existing ssh connections. Proceed with operation (y|n)? y
+Firewall is active and enabled on system startup</pre>
+<div class="note warn">Thứ tự đúng: allow/limit SSH, kiểm tra lại, rồi mới enable. Xem các rule đã thêm trước khi bật: <code>sudo ufw show added</code>, phải thấy SSH trong đó.</div>
+<h4>Lệnh 7: xem trạng thái</h4>
+<pre>sudo ufw status verbose
+
+<span class="c"># Kết quả mong đợi:</span>
+Status: active
+Logging: on (low)
+Default: deny (incoming), allow (outgoing), disabled (routed)
+New profiles: skip
+
+To                          Action      From
+--                          ------      ----
+22/tcp (OpenSSH)            LIMIT IN    Anywhere
+80/tcp                      ALLOW IN    Anywhere
+443/tcp                     ALLOW IN    Anywhere
+22/tcp (OpenSSH (v6))       LIMIT IN    Anywhere (v6)
+80/tcp (v6)                 ALLOW IN    Anywhere (v6)
+443/tcp (v6)                ALLOW IN    Anywhere (v6)</pre>
+<table><tr><th>Dòng / cột</th><th>Cách đọc</th></tr>
+<tr><td>Status: active</td><td>Firewall đang chạy. Nếu inactive thì rule chưa có tác dụng.</td></tr>
+<tr><td>Logging: on (low)</td><td>Ghi log mức thấp: chỉ các gói bị chặn (xem mục 6.5).</td></tr>
+<tr><td>Default: ...</td><td>Chặn chiều vào, cho phép chiều ra. disabled (routed) là bình thường với VPS làm web.</td></tr>
+<tr><td>Cột To</td><td>Đích: cổng (và giao thức) trên VPS mà rule áp dụng.</td></tr>
+<tr><td>Cột Action</td><td>ALLOW IN, LIMIT IN, DENY IN. IN là chiều vào.</td></tr>
+<tr><td>Cột From</td><td>Anywhere là mọi IPv4; Anywhere (v6) là mọi IPv6.</td></tr>
+<tr><td>Dòng có (v6)</td><td>UFW tự nhân đôi rule cho IPv6 khi IPV6=yes. Không có dòng (v6) thì IPv6 không được lọc.</td></tr>
+</table>
+<div class="note tip">Dùng <code>sudo ufw status numbered</code> khi cần xóa hoặc chèn rule.</div>
+<h3>6.3. Cú pháp rule chi tiết và thứ tự ưu tiên</h3>
+<p>Dạng đầy đủ: <code>ufw [hành động] [chiều] from [nguồn] to [đích] port [cổng] proto [giao thức]</code>.</p>
+<table><tr><th>Mục đích</th><th>Lệnh</th><th>Giải thích</th></tr>
+<tr><td>Mở cổng cho mọi người</td><td><code>ufw allow 8080/tcp</code></td><td>Rule đơn giản nhất</td></tr>
+<tr><td>Chỉ cho 1 IP vào 1 cổng</td><td><code>ufw allow from 203.0.113.10 to any port 5432 proto tcp</code></td><td>Mọi IP khác vẫn bị chặn theo default</td></tr>
+<tr><td>Chỉ cho một dải mạng</td><td><code>ufw allow from 203.0.113.0/24 to any port 22</code></td><td>/24 nghĩa là 256 địa chỉ</td></tr>
+<tr><td>Chặn hẳn 1 IP</td><td><code>ufw deny from 198.51.100.7</code></td><td>Chặn mọi cổng từ IP đó</td></tr>
+<tr><td>Chỉ mở trên một card mạng</td><td><code>ufw allow in on eth0 to any port 80</code></td><td>Hữu ích khi VPS có nhiều card</td></tr>
+<tr><td>Mở dải cổng</td><td><code>ufw allow 6000:6010/tcp</code></td><td>Bắt buộc kèm /tcp hoặc /udp</td></tr>
+<tr><td>Chèn rule lên đầu</td><td><code>ufw insert 1 deny from 198.51.100.7</code></td><td>Xem thứ tự bên dưới</td></tr>
+<tr><td>Xóa theo nội dung</td><td><code>ufw delete allow 80/tcp</code></td><td>Viết lại đúng rule, thêm delete phía trước</td></tr>
+<tr><td>Xóa theo số</td><td><code>ufw delete 3</code></td><td>Số lấy từ <code>ufw status numbered</code></td></tr>
+</table>
+<div class="note warn"><b>Rule khớp đầu tiên thắng.</b> Nếu đã có rule allow cho cổng 80 ở trên, một rule <code>deny from</code> thêm sau cùng sẽ không có tác dụng với IP đó. Muốn chặn có hiệu lực, chèn lên trên: <code>sudo ufw insert 1 deny from 198.51.100.7</code>.</div>
+<p>Khi xóa nhiều rule theo số, xóa từ số lớn về số nhỏ.</p>
+<h3>6.4. Các lệnh quản lý và vận hành UFW</h3>
+<table><tr><th>Lệnh</th><th>Tác dụng</th><th>Ghi chú</th></tr>
+<tr><td>ufw status</td><td>Xem rule dạng gọn</td><td>Thêm verbose hoặc numbered</td></tr>
+<tr><td>ufw reload</td><td>Nạp lại rule không tắt firewall</td><td>Dùng sau khi sửa file tay</td></tr>
+<tr><td>ufw disable</td><td>Tắt firewall (rule vẫn được lưu)</td><td>Dùng khi gỡ lỗi kết nối. Nhớ bật lại</td></tr>
+<tr><td>ufw reset</td><td>Xóa TOÀN BỘ rule và tắt firewall</td><td>Nguy hiểm, phải cấu hình lại từ đầu</td></tr>
+<tr><td>ufw show added</td><td>Xem các rule đã thêm dạng lệnh</td><td>Tiện để sao chép sang VPS khác</td></tr>
+<tr><td>ufw logging medium</td><td>Đổi mức ghi log</td><td>off, low, medium, high, full</td></tr>
+</table>
+<pre>sudo cp -a /etc/ufw /etc/ufw.bak-$(date +%F)     <span class="c"># sao lưu trước khi chỉnh sửa lớn</span></pre>
+<h3>6.5. Log của UFW: biết ai đang gõ cửa</h3>
+<pre>sudo tail -f /var/log/ufw.log
+
+<span class="c"># Một dòng điển hình:</span>
+Sep 30 10:15:22 my-vps kernel: [UFW BLOCK] IN=eth0 OUT= SRC=203.0.113.50 DST=102.245.237.2
+LEN=44 TTL=52 PROTO=TCP SPT=44321 DPT=3306 WINDOW=1024 SYN</pre>
+<table><tr><th>Trường</th><th>Ý nghĩa</th></tr>
+<tr><td>[UFW BLOCK]</td><td>Gói tin bị chặn</td></tr>
+<tr><td>IN=eth0 OUT=</td><td>Đi vào qua eth0. OUT rỗng nghĩa là gói dành cho chính VPS</td></tr>
+<tr><td>SRC=</td><td>IP nguồn, tức kẻ đang thử kết nối</td></tr>
+<tr><td>DST=</td><td>IP đích, chính là VPS của bạn</td></tr>
+<tr><td>PROTO=TCP</td><td>Giao thức</td></tr>
+<tr><td>DPT=3306</td><td>Cổng đích họ đang thử. Ở đây là 3306 (MySQL): có bot dò database</td></tr>
+<tr><td>SYN</td><td>Gói mở đầu kết nối TCP: lần thử kết nối mới</td></tr>
+</table>
+<pre>sudo grep "UFW BLOCK" /var/log/ufw.log | grep -o "SRC=[0-9.]*" | sort | uniq -c | sort -rn | head
+sudo grep "UFW BLOCK" /var/log/ufw.log | grep -o "DPT=[0-9]*" | sort | uniq -c | sort -rn | head</pre>
+<p>Bị dò cổng liên tục là bình thường với mọi IP public. Log chỉ là thông tin, không cần chặn thủ công từng IP.</p>
+<h3>6.6. Tình huống thực tế</h3>
+<p><b>Chỉ cho IP văn phòng/nhà vào SSH (chặt nhất):</b></p>
+<pre>sudo ufw delete limit OpenSSH
+sudo ufw allow from 203.0.113.10 to any port 22 proto tcp
+sudo ufw status numbered</pre>
+<div class="note warn">Chỉ dùng khi IP nhà mạng cố định. IP thay đổi sẽ khiến bạn tự khóa mình. Luôn biết cách vào bằng console của nhà cung cấp VPS.</div>
+<p><b>Cho một IP truy cập database để quản trị</b> (xong việc thì đóng lại):</p>
+<pre>sudo ufw allow from 203.0.113.10 to any port 5432 proto tcp
+sudo ufw delete allow from 203.0.113.10 to any port 5432 proto tcp</pre>
+<p>Cách an toàn hơn vẫn là SSH tunnel (mục 12.1).</p>
+<p><b>Mở cổng tạm để thử ứng dụng:</b></p>
+<pre>sudo ufw allow 3000/tcp              <span class="c"># thử truy cập http://102.245.237.2:3000</span>
+sudo ufw delete allow 3000/tcp       <span class="c"># đóng lại ngay khi xong</span></pre>
+<p><b>Bị khóa ra khỏi VPS:</b> vào console/VNC trong panel nhà cung cấp (không cần SSH), đăng nhập và sửa:</p>
+<pre>sudo ufw allow OpenSSH           <span class="c"># thêm lại rule SSH</span>
+<span class="c"># hoặc tạm tắt để vào lại rồi cấu hình sau:</span>
+sudo ufw disable</pre>
+<h3>6.7. Kiểm tra firewall hoạt động đúng</h3>
+<p>Xem <i>status</i> chỉ cho biết rule tồn tại, không chứng minh chúng có hiệu lực. Kiểm chứng từ bên ngoài:</p>
+<table><tr><th>Kiểm tra</th><th>Lệnh</th><th>Kết quả đúng</th></tr>
+<tr><td>Cổng nào đang lắng nghe trên VPS</td><td><code>sudo ss -tulpn</code></td><td>Chỉ 22, 80, 443 ở 0.0.0.0; dịch vụ nội bộ ở 127.0.0.1</td></tr>
+<tr><td>Kết nối cổng 443 từ máy bạn</td><td><code>nc -zv 102.245.237.2 443</code></td><td>succeeded (nếu Nginx đang chạy)</td></tr>
+<tr><td>Kết nối cổng đã đóng</td><td><code>nc -zv -w 3 102.245.237.2 3000</code></td><td>timed out hoặc failed</td></tr>
+<tr><td>Quét tổng thể</td><td><code>nmap -Pn 102.245.237.2</code></td><td>Chỉ thấy 22, 80, 443 open</td></tr>
+<tr><td>Xem lại rule</td><td><code>sudo ufw status verbose</code></td><td>Khớp dự định, có cả dòng (v6)</td></tr>
+</table>
+<div class="note warn">Chỉ quét VPS của chính bạn. Quét hệ thống của người khác khi chưa được phép có thể vi phạm điều khoản và pháp luật.</div>
+<div class="note warn"><b>Docker có thể vượt qua UFW.</b> Khi publish cổng dạng <code>-p 3000:3000</code>, Docker tự thêm rule iptables trước rule của UFW, nên cổng vẫn mở dù <code>ufw status</code> không có rule. Cách phòng: luôn bind localhost (<code>127.0.0.1:3000:3000</code>, xem mục 11.3) và kiểm tra lại bằng nmap.</div>
+<h3>6.8. Fail2ban: cơ chế và cấu hình</h3>
+<p>UFW quyết định cổng nào mở. Cổng SSH phải mở, nên kẻ tấn công vẫn gõ được vào đó. Fail2ban đọc log, phát hiện IP thất bại nhiều lần và tự thêm rule chặn IP đó.</p>
+<pre>Log đăng nhập SSH  -&gt; FILTER (regex nhận diện 'đăng nhập thất bại')
+                        |
+              đếm số lần theo từng IP trong findtime
+                        |
+          vượt maxretry? --có--&gt; ACTION: thêm rule chặn IP (bantime)
+                                                |
+                               hết bantime -&gt; tự gỡ chặn (unban)</pre>
+<table><tr><th>Khái niệm</th><th>Ý nghĩa</th></tr>
+<tr><td>Jail</td><td>Bộ quy tắc bảo vệ một dịch vụ (jail sshd bảo vệ SSH). Bật/tắt riêng từng jail</td></tr>
+<tr><td>Filter</td><td>Mẫu nhận diện dòng log thất bại, nằm ở /etc/fail2ban/filter.d/</td></tr>
+<tr><td>Action</td><td>Việc làm khi phát hiện, thường là thêm rule firewall, nằm ở /etc/fail2ban/action.d/</td></tr>
+<tr><td>Backend</td><td>Nguồn đọc log: file log hoặc journal của systemd</td></tr>
+</table>
+<p>Trên Ubuntu, gói fail2ban đã bật sẵn jail sshd. Đặt thông số trong <code>jail.local</code>, không sửa trực tiếp <code>jail.conf</code> (bị ghi đè khi nâng cấp):</p>
+<pre>sudo nano /etc/fail2ban/jail.local
+
+[DEFAULT]
+bantime = 1h
+findtime = 10m
+maxretry = 5
+backend = systemd
+ignoreip = 127.0.0.1/8 ::1 203.0.113.10
+
+[sshd]
+enabled = true</pre>
+<table><tr><th>Dòng</th><th>Ý nghĩa và cách chọn giá trị</th></tr>
+<tr><td>bantime = 1h</td><td>Thời gian chặn một IP (s, m, h, d, w). -1 là vĩnh viễn, không nên dùng</td></tr>
+<tr><td>findtime = 10m</td><td>Khoảng thời gian tính số lần thất bại</td></tr>
+<tr><td>maxretry = 5</td><td>5 lần sai trong 10 phút thì bị chặn 1 giờ</td></tr>
+<tr><td>backend = systemd</td><td>Đọc log từ journal, cần khi Ubuntu mới không còn /var/log/auth.log</td></tr>
+<tr><td>ignoreip</td><td>IP không bao giờ bị chặn. Thêm IP cố định của bạn để tránh tự chặn mình</td></tr>
+<tr><td>enabled = true</td><td>Bật jail. Không có dòng này thì jail không chạy</td></tr>
+</table>
+<p>Vì đã tắt đăng nhập bằng mật khẩu (mục 5.3), Fail2ban chủ yếu giúp giảm tải và làm sạch log.</p>
+<p><b>Tăng thời gian chặn cho kẻ tái phạm (tùy chọn):</b></p>
+<pre>[DEFAULT]
+bantime.increment = true         <span class="c"># mỗi lần tái phạm, thời gian chặn tăng lên</span>
+bantime.factor    = 2            <span class="c"># nhân đôi mỗi lần</span>
+bantime.maxtime   = 5w           <span class="c"># trần tối đa</span></pre>
+<h3>6.9. Phân tích các lệnh quản lý Fail2ban</h3>
+<pre>sudo systemctl enable --now fail2ban
+sudo systemctl restart fail2ban          <span class="c"># sau khi sửa jail.local</span>
+
+sudo fail2ban-client ping                <span class="c"># phải trả về: Server replied: pong</span>
+sudo fail2ban-client status              <span class="c"># danh sách jail đang chạy</span>
+sudo fail2ban-client status sshd         <span class="c"># chi tiết jail sshd</span></pre>
+<pre>Status for the jail: sshd
+|- Filter
+|  |- Currently failed: 1
+|  |- Total failed:      14
+|  `- Journal matches: _SYSTEMD_UNIT=ssh.service + _COMM=sshd
+`- Actions
+   |- Currently banned: 2
+   |- Total banned:     5
+   `- Banned IP list:   203.0.113.7 198.51.100.22</pre>
+<table><tr><th>Trường</th><th>Ý nghĩa</th></tr>
+<tr><td>Currently failed</td><td>Số lần thất bại trong cửa sổ findtime (chưa đủ để chặn)</td></tr>
+<tr><td>Total failed</td><td>Tổng số lần thất bại từ khi dịch vụ khởi động</td></tr>
+<tr><td>Journal matches</td><td>Nguồn log đang đọc. Trống hoặc sai thì jail không hoạt động</td></tr>
+<tr><td>Currently banned</td><td>Số IP đang bị chặn lúc này</td></tr>
+<tr><td>Banned IP list</td><td>Danh sách IP đang bị chặn</td></tr>
+</table>
+<pre><span class="c"># Chặn / gỡ chặn thủ công</span>
+sudo fail2ban-client set sshd banip 198.51.100.7
+sudo fail2ban-client set sshd unbanip 198.51.100.7     <span class="c"># ví dụ bạn lỡ tự chặn mình</span>
+sudo fail2ban-client get sshd bantime
+sudo fail2ban-client reload                             <span class="c"># nạp cấu hình, không restart</span>
+
+<span class="c"># Kiểm tra bộ lọc và đọc log</span>
+sudo fail2ban-regex systemd-journal /etc/fail2ban/filter.d/sshd.conf
+sudo tail -f /var/log/fail2ban.log</pre>
+<p>Nếu <code>fail2ban-regex</code> cho 0 dòng khớp trong khi thực tế có kẻ dò, backend hoặc nguồn log đang sai.</p>
+<table><tr><th>Dòng trong log</th><th>Ý nghĩa</th></tr>
+<tr><td>INFO [sshd] Found 203.0.113.7</td><td>Phát hiện một lần thất bại (chưa chặn)</td></tr>
+<tr><td>NOTICE [sshd] Ban 203.0.113.7</td><td>IP vượt ngưỡng và vừa bị chặn</td></tr>
+<tr><td>NOTICE [sshd] Unban 203.0.113.7</td><td>Hết bantime, được gỡ chặn</td></tr>
+<tr><td>NOTICE [sshd] ... already banned</td><td>IP đã bị chặn nhưng vẫn gửi thêm yêu cầu</td></tr>
+</table>
+<p>Xác nhận rule chặn nằm trong firewall (Fail2ban tạo chuỗi tên bắt đầu bằng f2b-): <code>sudo iptables -L -n | grep -i f2b</code></p>
+<p><b>Mở rộng bảo vệ (tùy chọn):</b></p>
+<pre>[nginx-http-auth]
+enabled = true
+backend = auto
+port    = http,https
+logpath = /var/log/nginx/error.log
+
+[recidive]
+enabled = true
+backend = auto
+logpath = /var/log/fail2ban.log
+bantime = 1w
+findtime = 1d
+maxretry = 3</pre>
+<p><i>nginx-http-auth</i> chặn IP thử sai mật khẩu HTTP Basic Auth. <i>recidive</i> theo dõi log của fail2ban: IP bị chặn từ 3 lần trở lên trong 1 ngày sẽ bị chặn cả tuần.</p>
+<h3>6.10. Tự động cập nhật bản vá bảo mật</h3>
+<pre>sudo apt install -y unattended-upgrades
+sudo dpkg-reconfigure --priority=low unattended-upgrades     <span class="c"># chọn Yes</span></pre>
+<p>Lệnh trên ghi file <code>/etc/apt/apt.conf.d/20auto-upgrades</code>, nội dung phải là:</p>
+<pre>APT::Periodic::Update-Package-Lists "1";
+APT::Periodic::Unattended-Upgrade "1";</pre>
+<p>Tùy chọn chi tiết ở <code>/etc/apt/apt.conf.d/50unattended-upgrades</code>. Ba dòng đáng cân nhắc (bỏ <code>//</code> để bật):</p>
+<pre>Unattended-Upgrade::Remove-Unused-Dependencies "true";
+Unattended-Upgrade::Automatic-Reboot "false";
+Unattended-Upgrade::Automatic-Reboot-Time "03:00";</pre>
+<p>Mặc định chỉ cài bản vá từ kho bảo mật. Bản vá kernel cần reboot; file <code>/var/run/reboot-required</code> xuất hiện khi cần.</p>
+<pre>sudo unattended-upgrade --dry-run --debug                  <span class="c"># chạy thử, không cài gì</span>
+systemctl list-timers apt-daily.timer apt-daily-upgrade.timer
+sudo tail -n 30 /var/log/unattended-upgrades/unattended-upgrades.log</pre>
+<h3>6.11. Sự cố thường gặp liên quan đến firewall</h3>
+<table><tr><th>Triệu chứng</th><th>Nguyên nhân</th><th>Cách xử lý</th></tr>
+<tr><td>SSH bị treo ngay sau ufw enable</td><td>Chưa allow SSH trước khi bật</td><td>Vào console nhà cung cấp, chạy <code>ufw allow OpenSSH</code></td></tr>
+<tr><td>Web vào được bằng IP nội bộ nhưng không vào từ ngoài</td><td>Thiếu allow 80/443, hoặc firewall ở panel chặn</td><td><code>ufw status</code>; kiểm tra Security Group ở panel</td></tr>
+<tr><td>Không SSH được dù không đổi gì</td><td>IP bị fail2ban chặn, hoặc rule limit kích hoạt</td><td>Dùng mạng khác hoặc console, <code>fail2ban-client set sshd unbanip</code></td></tr>
+<tr><td>Cổng database vẫn mở từ ngoài</td><td>Docker publish cổng, vượt qua UFW</td><td>Bind 127.0.0.1 trong docker-compose, quét lại bằng nmap</td></tr>
+<tr><td>Fail2ban không chặn dù log đầy lần thử</td><td>Backend sai, hoặc jail chưa bật</td><td><code>fail2ban-client status sshd</code>; <code>fail2ban-regex</code></td></tr>
+<tr><td>Rule deny không có tác dụng</td><td>Bị rule allow phía trên khớp trước</td><td>Dùng <code>ufw insert 1</code> để đưa rule deny lên đầu</td></tr>
+<tr><td>Đã đổi cổng SSH nhưng không vào được</td><td>Chưa mở cổng mới trên UFW trước khi restart SSH</td><td>Console nhà cung cấp: allow cổng mới, hoặc trả về cổng 22</td></tr>
+<tr><td>ufw enable báo lỗi</td><td>Nhân thiếu module hoặc VPS container hạn chế</td><td>Xem <code>journalctl -u ufw</code>; hỏi nhà cung cấp</td></tr>
+</table>
+</section>
+
+<section id="s7">
+<h2>7. Trỏ tên miền về VPS (DNS)</h2>
+<h3>7.1. Các bản ghi cần tạo</h3>
+<table><tr><th>Type</th><th>Name / Host</th><th>Value</th><th>Ghi chú</th></tr>
+<tr><td>A</td><td>tutor</td><td>102.245.237.2</td><td>Site chính tutor.haiphan.org (ô Name chỉ gõ tutor)</td></tr>
+<tr><td>A</td><td>@</td><td>102.245.237.2</td><td>Domain gốc haiphan.org (tùy chọn)</td></tr>
+<tr><td>A</td><td>api</td><td>102.245.237.2</td><td>Backend riêng api.haiphan.org (tùy chọn)</td></tr>
+<tr><td>AAAA</td><td>tutor</td><td>IPv6 của VPS</td><td>Chỉ khi VPS có IPv6 và Nginx lắng nghe IPv6</td></tr>
+</table>
+<p>TTL nên đặt 300 giây trong lúc setup để sửa sai nhanh, sau đó tăng lên 3600 hoặc Auto.</p>
+<h3>7.2. Kiểm tra DNS đã cập nhật</h3>
+<pre><span class="c"># [LOCAL]</span>
+dig +short tutor.haiphan.org
+dig +short tutor.haiphan.org @1.1.1.1        <span class="c"># hỏi thẳng DNS Cloudflare, bỏ qua cache máy</span>
+<span class="c"># Không có dig: nslookup tutor.haiphan.org</span>
+
+<span class="c"># Kết quả mong đợi:</span>
+102.245.237.2</pre>
+<p>Nếu chưa ra IP đúng: chờ thêm (thường 5-30 phút, tối đa vài giờ), kiểm tra lỗi chính tả ở bản ghi, hoặc xóa cache DNS của máy.</p>
+<h3>7.3. Nếu dùng Cloudflare</h3>
+<ul>
+<li><b>Đám mây cam (Proxied):</b> traffic đi qua Cloudflare, ẩn IP thật, có CDN và bảo vệ cơ bản.</li>
+<li><b>Đám mây xám (DNS only):</b> trỏ thẳng về VPS.</li>
+<li>Khi cấp SSL bằng certbot kiểu HTTP-01, để xám tạm thời, cấp xong bật lại cam.</li>
+<li>Ở SSL/TLS chọn chế độ <b>Full (strict)</b>. Tránh Flexible vì gây vòng lặp chuyển hướng và kết nối Cloudflare đến VPS không mã hóa.</li>
+<li>Khi bật proxy, IP Nginx thấy là IP Cloudflare; muốn log IP thật, cấu hình real_ip (mục 7.5).</li>
+</ul>
+<h3>7.4. Trỏ tên miền mua tại Cloudflare về VPS (từng bước)</h3>
+<p>Mua domain ngay tại Cloudflare Registrar thì DNS đã có sẵn, không cần đổi nameserver. Nếu domain mua nơi khác, phải đổi nameserver sang hai nameserver Cloudflare cung cấp và chờ trạng thái Active.</p>
+<ol>
+<li>Đăng nhập dash.cloudflare.com.</li>
+<li>Ở Account Home, bấm vào tên miền (haiphan.org).</li>
+<li>Thanh bên trái chọn <b>DNS</b>, rồi <b>Records</b>.</li>
+<li>Nếu có sẵn bản ghi A, AAAA hoặc CNAME cho tutor (hoặc @, www) do trang đỗ tên miền tạo, xóa hoặc sửa. Một tên không được vừa có CNAME vừa có A.</li>
+<li>Bấm <b>Add record</b> và điền: Type <b>A</b>; Name <b>tutor</b>; IPv4 address <b>102.245.237.2</b>; Proxy status <b>DNS only (xám)</b> trong lúc setup; TTL <b>Auto</b>. Bấm Save.</li>
+<li>Bản ghi gốc <b>@</b> (tùy chọn, chỉ khi muốn haiphan.org cũng mở được, xem mục 13.3) cũng dùng A, DNS only.</li>
+<li>Kiểm tra: <code>dig +short tutor.haiphan.org</code> và <code>dig +short tutor.haiphan.org @1.1.1.1</code>, phải ra 102.245.237.2. Chỉ khi xám, dig mới trả IP VPS; bật cam thì dig trả IP Cloudflare (bình thường).</li>
+</ol>
+<div class="note tip">Cấp SSL (bước 6) khi bản ghi còn xám, sau đó mới bật proxy cam và đặt SSL/TLS = Full (strict), tránh lỗi chuyển hướng.</div>
+<h3>7.5. Lấy đúng IP người dùng khi bật proxy Cloudflare</h3>
+<p>Khi bật proxy, mọi request đến Nginx đều từ IP Cloudflare, nên log, rate limit và Fail2ban chỉ thấy IP Cloudflare. Cloudflare gửi IP thật trong header <code>CF-Connecting-IP</code>; Nginx chỉ nên tin header này khi request đến từ dải IP Cloudflare:</p>
+<pre>{
+  for f in ips-v4 ips-v6; do
+    for ip in $(curl -s https://www.cloudflare.com/$f); do
+      echo "set_real_ip_from $ip;"
+    done
+  done
+  echo "real_ip_header CF-Connecting-IP;"
+} | sudo tee /etc/nginx/conf.d/cloudflare-realip.conf
+
+sudo nginx -t &amp;&amp; sudo systemctl reload nginx</pre>
+<p>Danh sách IP Cloudflare có thể thay đổi nên cần cập nhật định kỳ. Nếu truy cập thẳng bằng IP hoặc để xám mà vẫn dùng file này thì không sao, vì header chỉ được tin khi nguồn nằm trong dải đã khai báo.</p>
+<h3>7.6. Cổng nào đi qua proxy Cloudflare được</h3>
+<p>HTTP: 80, 8080, 8880, 2052, 2082, 2086, 2095. HTTPS: 443, 2053, 2083, 2087, 2096, 8443. Các cổng khác bị bỏ qua khi bật proxy.</p>
+<ul>
+<li>Webmin (cổng 10000) và nhiều trang quản trị không nằm trong danh sách: để subdomain panel ở chế độ DNS only (xám), hoặc dùng SSH tunnel.</li>
+<li>SSH (cổng 22) không đi qua proxy. Bản ghi dùng để SSH phải DNS only; đơn giản hơn là SSH thẳng bằng IP.</li>
+<li>Bật proxy ẩn IP thật khỏi DNS nhưng không làm VPS tự an toàn: UFW và SSH hardening vẫn cần. Nếu một bản ghi xám khác trỏ cùng IP thì IP VPS vẫn lộ.</li>
+<li>WebSocket vẫn chạy qua proxy trên cổng 80/443 nếu Nginx đã cấu hình Upgrade (mục 10.6).</li>
+</ul>
+<h3>7.7. Hai cách cấp SSL khác khi dùng Cloudflare (tùy chọn)</h3>
+<p><b>Cách A: Cloudflare Origin Certificate.</b> Chứng chỉ Cloudflare cấp cho đoạn Cloudflare tới VPS, hạn rất dài (tối đa 15 năm). Chỉ hợp lệ khi domain bật proxy; truy cập thẳng bằng IP sẽ báo không tin cậy.</p>
+<ol>
+<li>Cloudflare, SSL/TLS, mục Origin Server, bấm Create Certificate, chọn tutor.haiphan.org (hoặc *.haiphan.org).</li>
+<li>Sao chép Origin Certificate và Private Key. Private key chỉ hiện một lần, lưu ngay.</li>
+<li>Trên VPS tạo hai file và đặt quyền chặt:</li>
+</ol>
+<pre>sudo mkdir -p /etc/ssl/cloudflare
+sudo nano /etc/ssl/cloudflare/tutor.haiphan.org.pem          <span class="c"># dán Origin Certificate</span>
+sudo nano /etc/ssl/cloudflare/tutor.haiphan.org.key          <span class="c"># dán Private Key</span>
+sudo chmod 600 /etc/ssl/cloudflare/tutor.haiphan.org.key
+
+server {
+    listen 443 ssl;
+    http2 on;
+    server_name tutor.haiphan.org;
+    ssl_certificate     /etc/ssl/cloudflare/tutor.haiphan.org.pem;
+    ssl_certificate_key /etc/ssl/cloudflare/tutor.haiphan.org.key;
+    <span class="c"># ... phần location proxy_pass như mục 10.6</span>
+}</pre>
+<p><b>Cách B: Let's Encrypt qua DNS-01 với API token Cloudflare.</b> Không cần cổng 80, cho phép wildcard (*.haiphan.org). Certbot tự tạo bản ghi TXT tạm trong DNS Cloudflare.</p>
+<ol>
+<li>Cloudflare, My Profile, API Tokens, Create Token, mẫu <i>Edit zone DNS</i>, giới hạn Zone Resources vào đúng domain.</li>
+<li>Sao chép token (chỉ hiện một lần) và lưu trên VPS với quyền chặt.</li>
+<li>Cài plugin và chạy certbot:</li>
+</ol>
+<pre>sudo apt install -y python3-certbot-dns-cloudflare
+sudo mkdir -p /root/.secrets
+sudo nano /root/.secrets/cloudflare.ini
+<span class="c"># nội dung: dns_cloudflare_api_token = DAN_TOKEN_CUA_BAN_VAO_DAY</span>
+sudo chmod 600 /root/.secrets/cloudflare.ini
+
+sudo certbot certonly --dns-cloudflare \
+  --dns-cloudflare-credentials /root/.secrets/cloudflare.ini \
+  -d haiphan.org -d '*.haiphan.org'</pre>
+<p>Chứng chỉ nằm ở /etc/letsencrypt/live/haiphan.org/, bạn tự khai báo vào Nginx (certonly không tự sửa Nginx).</p>
+<div class="note warn">API token là bí mật như mật khẩu: không commit lên Git, không gửi cho người khác. Thu hồi ngay trong Cloudflare nếu nghi ngờ lộ.</div>
+<h3>7.8. Lỗi thường gặp khi dùng domain Cloudflare</h3>
+<table><tr><th>Hiện tượng</th><th>Nguyên nhân</th><th>Cách xử lý</th></tr>
+<tr><td>DNS_PROBE_FINISHED_NXDOMAIN</td><td>Chưa có bản ghi, hoặc gõ sai tên</td><td>Kiểm tra Name trong DNS Records, <code>dig +short</code></td></tr>
+<tr><td>Domain ra trang đỗ tên miền</td><td>Còn bản ghi cũ trỏ đi nơi khác</td><td>Xóa A/AAAA/CNAME cũ, giữ đúng bản ghi trỏ về VPS</td></tr>
+<tr><td>dig không trả IP VPS</td><td>Đang bật proxy (cam)</td><td>Bình thường. Muốn kiểm tra IP gốc thì tạm để xám</td></tr>
+<tr><td>ERR_TOO_MANY_REDIRECTS</td><td>SSL mode Flexible trong khi Nginx/certbot ép HTTPS</td><td>Đổi SSL mode sang Full (strict)</td></tr>
+<tr><td>Lỗi 521 Web server is down</td><td>Nginx không chạy, hoặc firewall chặn 80/443</td><td><code>systemctl status nginx</code>; <code>ufw status</code></td></tr>
+<tr><td>Lỗi 522 Connection timed out</td><td>VPS không phản hồi kịp: tắt, firewall, mạng lỗi</td><td>Kiểm tra VPS Online, UFW, không chặn dải IP Cloudflare</td></tr>
+<tr><td>Lỗi 525 SSL handshake failed</td><td>Full/Full strict nhưng VPS chưa có HTTPS</td><td>Chạy certbot hoặc cài Origin Certificate</td></tr>
+<tr><td>Lỗi 526 Invalid SSL certificate</td><td>Full (strict) nhưng chứng chỉ hết hạn, sai domain hoặc tự ký</td><td><code>certbot certificates</code>; cấp lại đúng domain</td></tr>
+<tr><td>Lỗi 520 Unknown error</td><td>Ứng dụng đóng kết nối đột ngột</td><td>Xem log Nginx và <code>pm2 logs</code></td></tr>
+<tr><td>Lỗi 1016 Origin DNS error</td><td>Bản ghi trỏ tới tên/IP không phân giải được</td><td>Kiểm tra giá trị bản ghi có đúng IP VPS</td></tr>
+<tr><td>Log Nginx toàn IP Cloudflare</td><td>Chưa khôi phục IP thật</td><td>Làm theo mục 7.5</td></tr>
+</table>
+<p>Kiểm tra riêng VPS (bỏ qua Cloudflare): <code>curl -I --resolve tutor.haiphan.org:443:102.245.237.2 https://tutor.haiphan.org</code>. Lệnh này giúp tách lỗi nằm ở VPS hay ở Cloudflare.</p>
+</section>
+
+<section id="s8">
+<h2>8. Cài đặt và làm quen Nginx</h2>
+<h3>8.1. Cài đặt</h3>
+<pre><span class="c"># [VPS]</span>
+sudo apt install -y nginx
+sudo systemctl enable --now nginx
+systemctl status nginx --no-pager</pre>
+<p>Mở http://102.245.237.2 trên trình duyệt; thấy trang <i>Welcome to nginx!</i> là thành công. Nếu không vào được: kiểm tra UFW, firewall ở panel nhà cung cấp, và <code>sudo ss -tulpn | grep :80</code>.</p>
+<h3>8.2. Cấu trúc thư mục cần nhớ</h3>
+<table><tr><th>Đường dẫn</th><th>Ý nghĩa</th></tr>
+<tr><td>/etc/nginx/nginx.conf</td><td>Cấu hình chính (worker, gzip, log, include các file khác)</td></tr>
+<tr><td>/etc/nginx/sites-available/</td><td>Nơi viết file cấu hình từng site</td></tr>
+<tr><td>/etc/nginx/sites-enabled/</td><td>Symlink tới các site đang bật</td></tr>
+<tr><td>/etc/nginx/conf.d/</td><td>File cấu hình bổ sung, tự được nạp (*.conf)</td></tr>
+<tr><td>/var/log/nginx/access.log, error.log</td><td>Log truy cập và log lỗi</td></tr>
+<tr><td>/var/www/</td><td>Nơi đặt code website</td></tr>
+</table>
+<h3>8.3. Các lệnh quản lý Nginx</h3>
+<table><tr><th>Mục đích</th><th>Lệnh</th></tr>
+<tr><td>Kiểm tra cấu hình</td><td><code>sudo nginx -t</code></td></tr>
+<tr><td>Áp dụng cấu hình (không ngắt kết nối)</td><td><code>sudo systemctl reload nginx</code></td></tr>
+<tr><td>Khởi động lại hoàn toàn</td><td><code>sudo systemctl restart nginx</code></td></tr>
+<tr><td>Xem trạng thái / log dịch vụ</td><td><code>systemctl status nginx</code>; <code>journalctl -u nginx -n 50</code></td></tr>
+<tr><td>Xem toàn bộ cấu hình đang nạp</td><td><code>sudo nginx -T | less</code></td></tr>
+</table>
+<div class="note tip">Quy tắc vàng: sau mỗi lần sửa cấu hình luôn chạy <code>sudo nginx -t &amp;&amp; sudo systemctl reload nginx</code>. Nếu -t báo lỗi thì reload không chạy, site đang chạy không bị ảnh hưởng.</div>
+<h3>8.4. Site mặc định chặn truy cập bằng IP hoặc domain lạ</h3>
+<pre># /etc/nginx/sites-available/000-default-deny
+server {
+    listen 80 default_server;
+    listen [::]:80 default_server;
+    server_name _;
+    return 444;      # đóng kết nối không trả nội dung
+}
+
+sudo ln -s /etc/nginx/sites-available/000-default-deny /etc/nginx/sites-enabled/
+sudo rm -f /etc/nginx/sites-enabled/default
+sudo nginx -t &amp;&amp; sudo systemctl reload nginx</pre>
+</section>
+
+<section id="s9">
+<h2>9. Triển khai website tĩnh</h2>
+<p>Áp dụng cho HTML/CSS/JS thuần, bản build của React/Vite/Vue, hoặc Next.js xuất tĩnh (export).</p>
+<h3>9.1. Chuẩn bị thư mục và đẩy file lên</h3>
+<pre><span class="c"># [VPS]</span>
+sudo mkdir -p /var/www/tutor.haiphan.org
+sudo chown -R haidang:haidang /var/www/tutor.haiphan.org
+
+<span class="c"># [LOCAL] build xong đẩy thư mục dist lên</span>
+rsync -avz --delete ./dist/ haidang@102.245.237.2:/var/www/tutor.haiphan.org/</pre>
+<div class="note warn">Cờ <code>--delete</code> xóa trên VPS những file không còn ở máy bạn. Kiểm tra kỹ đường dẫn đích trước khi chạy.</div>
+<h3>9.2. Server block cho site tĩnh</h3>
+<pre>sudo nano /etc/nginx/sites-available/tutor.haiphan.org
+
+server {
+    listen 80;
+    listen [::]:80;
+    server_name tutor.haiphan.org;
+
+    root /var/www/tutor.haiphan.org;
+    index index.html;
+
+    location / {
+        try_files $uri $uri/ /index.html;    # cần cho SPA (React Router...)
+    }
+
+    # cache file tĩnh có hash trong tên
+    location ~* \.(js|css|png|jpg|jpeg|gif|svg|ico|webp|woff2?)$ {
+        expires 30d;
+        add_header Cache-Control "public, immutable";
+        access_log off;
+    }
+
+    # không cache file html để cập nhật có hiệu lực ngay
+    location ~* \.html$ {
+        add_header Cache-Control "no-cache";
+    }
+
+    gzip on;
+    gzip_comp_level 5;
+    gzip_types text/css application/javascript application/json image/svg+xml text/plain;
+}
+
+sudo ln -s /etc/nginx/sites-available/tutor.haiphan.org /etc/nginx/sites-enabled/
+sudo nginx -t &amp;&amp; sudo systemctl reload nginx
+curl -I http://tutor.haiphan.org          <span class="c"># phải thấy HTTP/1.1 200 OK</span></pre>
+</section>
+
+<section id="s10">
+<h2>10. Triển khai ứng dụng Node.js (Next.js, NestJS, Express)</h2>
+<p>Ứng dụng Node chạy nền ở cổng nội bộ (ví dụ 3000), PM2 giữ cho nó luôn sống, Nginx nhận request từ Internet và chuyển vào.</p>
+<h3>10.1. Cài Node.js bằng nvm (dưới user haidang)</h3>
+<pre><span class="c"># [VPS] đăng nhập bằng user haidang, không dùng sudo</span>
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
+source ~/.bashrc
+nvm install --lts
+node -v &amp;&amp; npm -v</pre>
+<div class="note tip">Chọn phiên bản Node theo trường engines trong package.json của dự án, ví dụ <code>nvm install 20</code>. Mỗi dự án có thể dùng Node riêng.</div>
+<h3>10.2. Thêm swap nếu RAM từ 2 GB trở xuống</h3>
+<p>Build (đặc biệt Next.js, TypeScript) ngốn RAM và dễ bị kill (thông báo <i>Killed</i>). Swap là lưới an toàn:</p>
+<pre>sudo fallocate -l 2G /swapfile
+sudo chmod 600 /swapfile
+sudo mkswap /swapfile
+sudo swapon /swapfile
+echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+echo 'vm.swappiness=10' | sudo tee /etc/sysctl.d/99-swap.conf
+sudo sysctl --system
+free -h</pre>
+<h3>10.3. Lấy source code</h3>
+<p>Repo public chỉ cần <code>git clone</code>. Repo private thì tạo deploy key riêng cho VPS:</p>
+<pre><span class="c"># [VPS] user haidang</span>
+ssh-keygen -t ed25519 -f ~/.ssh/github_deploy -C "vps-deploy-key" -N ""
+cat ~/.ssh/github_deploy.pub
+<span class="c"># Copy nội dung -> GitHub repo -> Settings -> Deploy keys -> Add (chỉ cần quyền read)</span>
+
+nano ~/.ssh/config
+
+Host github.com
+    HostName github.com
+    User git
+    IdentityFile ~/.ssh/github_deploy
+    IdentitiesOnly yes
+
+ssh -T git@github.com                        <span class="c"># phải chào tên repo/user</span>
+sudo mkdir -p /var/www/myapp &amp;&amp; sudo chown haidang:haidang /var/www/myapp
+cd /var/www/myapp
+git clone git@github.com:USERNAME/REPO.git .</pre>
+<h3>10.4. Biến môi trường, cài dependency và build</h3>
+<pre>cp .env.example .env
+nano .env                       <span class="c"># điền giá trị production: DATABASE_URL, JWT_SECRET, ...</span>
+chmod 600 .env                  <span class="c"># chỉ chủ sở hữu đọc được</span>
+
+npm ci                          <span class="c"># cài đúng phiên bản trong package-lock.json</span>
+npm run build</pre>
+<div class="note warn">Không commit .env lên Git. Tạo secret mạnh bằng <code>openssl rand -base64 48</code>. Với Next.js, biến bắt đầu bằng <code>NEXT_PUBLIC_</code> được nhúng vào bản build nên phải khai báo TRƯỚC khi <code>npm run build</code>; đổi chúng cần build lại.</div>
+<p>Next.js có thể bật <code>output: 'standalone'</code> trong next.config để chạy gọn nhẹ hơn (<code>node .next/standalone/server.js</code>). NestJS build ra <code>dist/</code> và chạy bằng <code>node dist/main.js</code>.</p>
+<h3>10.5. Chạy bằng PM2</h3>
+<pre>npm install -g pm2
+
+<span class="c"># Next.js</span>
+pm2 start npm --name "web" -- start -- -p 3000
+<span class="c"># NestJS (sau khi build)</span>
+PORT=4000 pm2 start dist/main.js --name "api"
+
+pm2 save                         <span class="c"># lưu danh sách tiến trình</span>
+pm2 startup systemd              <span class="c"># in ra 1 lệnh sudo: COPY và CHẠY lệnh đó</span>
+pm2 status
+pm2 logs web --lines 50</pre>
+<p>Quản lý nhiều service bằng <code>ecosystem.config.js</code> nằm trong repo:</p>
+<pre>module.exports = {
+  apps: [
+    {
+      name: "web",
+      cwd: "/var/www/myapp/web",
+      script: "npm",
+      args: "start -- -p 3000",
+      env: { NODE_ENV: "production" },
+      max_memory_restart: "700M",       // tự restart nếu rò rỉ bộ nhớ
+    },
+    {
+      name: "api",
+      cwd: "/var/www/myapp/api",
+      script: "dist/main.js",
+      env: { NODE_ENV: "production", PORT: 4000 },
+      max_memory_restart: "500M",
+    },
+  ],
+};
+// Chạy: pm2 start ecosystem.config.js -> pm2 save</pre>
+<table><tr><th>Lệnh PM2</th><th>Tác dụng</th></tr>
+<tr><td>pm2 reload web</td><td>Restart mềm, giảm gián đoạn</td></tr>
+<tr><td>pm2 restart web</td><td>Restart cứng</td></tr>
+<tr><td>pm2 stop / delete web</td><td>Dừng / xóa tiến trình khỏi danh sách</td></tr>
+<tr><td>pm2 monit</td><td>Bảng CPU/RAM/log thời gian thực</td></tr>
+<tr><td>pm2 flush</td><td>Xóa log hiện tại</td></tr>
+</table>
+<h3>10.6. Cấu hình Nginx làm reverse proxy</h3>
+<pre>sudo nano /etc/nginx/sites-available/tutor.haiphan.org
+
+server {
+    listen 80;
+    listen [::]:80;
+    server_name tutor.haiphan.org;
+
+    client_max_body_size 20M;                   # giới hạn upload
+
+    location / {                                # frontend
+        proxy_pass http://127.0.0.1:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;        # cần cho WebSocket
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 60s;
+    }
+
+    location /api/ {                            # backend (bỏ nếu không dùng)
+        proxy_pass http://127.0.0.1:4000/;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+
+sudo ln -s /etc/nginx/sites-available/tutor.haiphan.org /etc/nginx/sites-enabled/
+sudo nginx -t &amp;&amp; sudo systemctl reload nginx
+curl -I http://tutor.haiphan.org</pre>
+<div class="note warn">Chú ý dấu / cuối: <code>proxy_pass http://127.0.0.1:4000/;</code> kết hợp <code>location /api/</code> sẽ cắt tiền tố /api trước khi chuyển tới backend. Bỏ dấu / thì backend nhận nguyên đường dẫn /api/... Chọn đúng theo cách backend định tuyến.</div>
+<p>Nếu backend ở subdomain riêng (api.haiphan.org), tạo server block riêng với server_name api.haiphan.org, proxy tới cổng 4000. Cách này tránh nhầm tiền tố và thuận tiện cho CORS.</p>
+<h3>10.7. Thay thế PM2 bằng systemd (tùy chọn)</h3>
+<pre># /etc/systemd/system/myapp-api.service
+[Unit]
+Description=MyApp API
+After=network.target
+
+[Service]
+User=haidang
+WorkingDirectory=/var/www/myapp/api
+EnvironmentFile=/var/www/myapp/api/.env
+ExecStart=/home/haidang/.nvm/versions/node/v20.18.0/bin/node dist/main.js
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+
+sudo systemctl daemon-reload
+sudo systemctl enable --now myapp-api
+journalctl -u myapp-api -f          <span class="c"># xem log</span></pre>
+<div class="note warn">Đường dẫn Node trong ExecStart phải là đường dẫn tuyệt đối thực tế (xem bằng <code>which node</code>), vì systemd không nạp môi trường nvm.</div>
+</section>
+
+<section id="s11">
+<h2>11. Triển khai bằng Docker và Docker Compose (tùy chọn)</h2>
+<h3>11.1. Cài Docker</h3>
+<pre>curl -fsSL https://get.docker.com | sudo sh
+sudo usermod -aG docker haidang         <span class="c"># đăng xuất và đăng nhập lại để có hiệu lực</span>
+docker --version &amp;&amp; docker compose version
+docker run --rm hello-world</pre>
+<h3>11.2. Dockerfile mẫu cho ứng dụng Node</h3>
+<pre>FROM node:20-alpine AS build
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+COPY . .
+RUN npm run build
+
+FROM node:20-alpine
+WORKDIR /app
+ENV NODE_ENV=production
+COPY package*.json ./
+RUN npm ci --omit=dev
+COPY --from=build /app/dist ./dist
+EXPOSE 4000
+USER node
+CMD ["node", "dist/main.js"]</pre>
+<h3>11.3. docker-compose.yml cho app và database</h3>
+<pre>services:
+  app:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - "127.0.0.1:4000:4000"        # chỉ bind localhost, Nginx sẽ proxy vào
+    depends_on:
+      db:
+        condition: service_healthy
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: appuser
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: appdb
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U appuser -d appdb"]
+      interval: 10s
+      retries: 5
+volumes:
+  pgdata:
+
+docker compose up -d --build
+docker compose ps
+docker compose logs -f app</pre>
+<div class="note warn">Docker có thể bỏ qua UFW nếu bạn publish cổng dạng "3000:3000". Luôn bind "127.0.0.1:PORT:PORT" cho service không cần public, đặc biệt là database.</div>
+<p>Nginx trên host vẫn dùng cấu hình reverse proxy như mục 10.6, trỏ tới 127.0.0.1 và cổng đã bind.</p>
+</section>
+
+<section id="s12">
+<h2>12. Cài đặt cơ sở dữ liệu</h2>
+<h3>12.1. PostgreSQL</h3>
+<pre><span class="c"># [VPS]</span>
+sudo apt install -y postgresql postgresql-contrib
+sudo systemctl enable --now postgresql
+sudo -u postgres psql -c "select version();"
+
+<span class="c"># Tạo user và database riêng cho ứng dụng (không dùng user postgres)</span>
+sudo -u postgres psql
+
+CREATE USER appuser WITH PASSWORD 'mat_khau_manh_o_day';
+CREATE DATABASE appdb OWNER appuser ENCODING 'UTF8';
+GRANT ALL PRIVILEGES ON DATABASE appdb TO appuser;
+\q</pre>
+<p>Chuỗi kết nối cho ứng dụng cùng VPS:</p>
+<pre>DATABASE_URL="postgresql://appuser:mat_khau_manh_o_day@127.0.0.1:5432/appdb"</pre>
+<p>Kiểm tra PostgreSQL chỉ lắng nghe localhost:</p>
+<pre>sudo ss -tulpn | grep 5432
+
+<span class="c"># Kết quả mong đợi:</span>
+tcp   LISTEN 0   244   127.0.0.1:5432   0.0.0.0:*   users:(("postgres",pid=1234,fd=6))</pre>
+<div class="note warn">Nếu thấy 0.0.0.0:5432, sửa <code>listen_addresses = 'localhost'</code> trong postgresql.conf. Cần quản trị từ máy cá nhân? Dùng SSH tunnel thay vì mở cổng: <code>ssh -L 5433:127.0.0.1:5432 haidang@102.245.237.2</code> rồi kết nối tới localhost:5433.</div>
+<h3>12.2. MySQL / MariaDB (nếu dự án dùng)</h3>
+<pre>sudo apt install -y mariadb-server
+sudo mysql_secure_installation                # đặt mật khẩu root, xóa user ẩn danh, tắt root từ xa
+sudo mysql
+
+CREATE DATABASE appdb CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE USER 'appuser'@'localhost' IDENTIFIED BY 'mat_khau_manh_o_day';
+GRANT ALL PRIVILEGES ON appdb.* TO 'appuser'@'localhost';
+FLUSH PRIVILEGES;</pre>
+<h3>12.3. Redis (cache, hàng đợi)</h3>
+<pre>sudo apt install -y redis-server
+sudo nano /etc/redis/redis.conf
+# bind 127.0.0.1 -::1        (giữ nguyên, không mở ra ngoài)
+# requirepass mat_khau_redis (bỏ comment và đặt mật khẩu)
+sudo systemctl restart redis-server
+redis-cli -a mat_khau_redis ping           # phải trả về PONG</pre>
+</section>
+
+<section id="s13">
+<h2>13. Cài SSL miễn phí (Let's Encrypt)</h2>
+<p>Yêu cầu: DNS đã trỏ đúng về VPS, Nginx phục vụ domain ở cổng 80, và cổng 80/443 mở trên mọi lớp firewall.</p>
+<h3>13.1. Cấp chứng chỉ</h3>
+<pre>sudo apt install -y certbot python3-certbot-nginx
+sudo certbot --nginx -d tutor.haiphan.org</pre>
+<p>Certbot hỏi email (nhận cảnh báo hết hạn), đồng ý điều khoản, và hỏi có chuyển hướng HTTP sang HTTPS không (nên chọn có). Sau đó nó tự sửa file Nginx để thêm listen 443 ssl và đường dẫn chứng chỉ.</p>
+<pre><span class="c"># Kết quả mong đợi:</span>
+Successfully received certificate.
+Certificate is saved at: /etc/letsencrypt/live/tutor.haiphan.org/fullchain.pem
+This certificate expires on 2026-12-29.
+Deploying certificate
+Congratulations! You have successfully enabled HTTPS</pre>
+<h3>13.2. Gia hạn tự động</h3>
+<p>Chứng chỉ có hạn 90 ngày. Certbot cài sẵn bộ hẹn giờ gia hạn; kiểm tra:</p>
+<pre>sudo systemctl list-timers | grep certbot
+sudo certbot renew --dry-run
+sudo certbot certificates            <span class="c"># xem ngày hết hạn</span></pre>
+<h3>13.3. Chuyển hướng domain gốc haiphan.org về tutor.haiphan.org (tùy chọn)</h3>
+<p>Nếu cũng trỏ domain gốc về VPS, nên chuyển hướng về địa chỉ chuẩn để tránh hai địa chỉ cùng một nội dung (có hại cho SEO). Chứng chỉ phải bao gồm cả haiphan.org:</p>
+<pre>sudo certbot --nginx -d tutor.haiphan.org -d haiphan.org
+
+server {
+    listen 443 ssl;
+    http2 on;
+    server_name haiphan.org;
+    ssl_certificate     /etc/letsencrypt/live/tutor.haiphan.org/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/tutor.haiphan.org/privkey.pem;
+    return 301 https://tutor.haiphan.org$request_uri;
+}</pre>
+<h3>13.4. Security header nên thêm</h3>
+<pre>add_header X-Frame-Options "SAMEORIGIN" always;
+add_header X-Content-Type-Options "nosniff" always;
+add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;</pre>
+<p>Trong khối http {} của nginx.conf thêm <code>server_tokens off;</code>. Chỉ bật HSTS khi HTTPS đã chạy ổn định, vì trình duyệt ghi nhớ và từ chối HTTP trong thời gian dài.</p>
+<h3>13.5. Các lỗi thường gặp khi cấp chứng chỉ</h3>
+<table><tr><th>Thông báo / hiện tượng</th><th>Nguyên nhân</th><th>Cách xử lý</th></tr>
+<tr><td>Timeout during connect / Connection refused</td><td>Cổng 80 bị chặn</td><td>Mở cổng 80 ở mọi firewall</td></tr>
+<tr><td>NXDOMAIN / DNS problem</td><td>Domain chưa trỏ hoặc sai bản ghi</td><td>dig +short domain, sửa DNS, chờ lan truyền</td></tr>
+<tr><td>Invalid response ... 404</td><td>Nginx chưa có server_name đúng</td><td>Kiểm tra server block, nginx -t, reload</td></tr>
+<tr><td>Too many certificates (rate limit)</td><td>Cấp lại quá nhiều lần trong một tuần</td><td>Dùng --dry-run hoặc --staging để thử</td></tr>
+<tr><td>Cloudflare proxy bật</td><td>Cloudflare che thử thách</td><td>Tắt proxy khi cấp</td></tr>
+</table>
+</section>
+
+<section id="s14">
+<h2>14. Quy trình cập nhật (deploy phiên bản mới)</h2>
+<h3>14.1. Script deploy có rollback tự động</h3>
+<pre>#!/usr/bin/env bash
+# /var/www/myapp/deploy.sh
+set -euo pipefail
+
+APP_DIR=/var/www/myapp
+cd "$APP_DIR"
+PREV=$(git rev-parse HEAD)
+
+rollback() {
+  echo "Deploy lỗi, quay về commit $PREV"
+  git reset --hard "$PREV"
+  npm ci &amp;&amp; npm run build
+  pm2 reload all --update-env
+  exit 1
+}
+trap rollback ERR
+
+git fetch origin main
+git reset --hard origin/main
+npm ci
+npm run build
+pm2 reload all --update-env
+
+sleep 5
+curl -fsS http://127.0.0.1:3000 &gt; /dev/null          <span class="c"># health check, lỗi sẽ kích hoạt rollback</span>
+trap - ERR
+echo "Deploy thành công: $(git rev-parse --short HEAD) lúc $(date)"
+
+chmod +x deploy.sh
+./deploy.sh</pre>
+<div class="note warn">Script chỉ rollback code. Nếu bản mới có migration database không tương thích ngược, cần backup trước khi migrate và migration có thể đảo ngược.</div>
+<h3>14.2. Deploy tự động bằng GitHub Actions</h3>
+<ol>
+<li>Trên máy cá nhân: <code>ssh-keygen -t ed25519 -f ci_key -N ""</code>.</li>
+<li>Thêm nội dung ci_key.pub vào ~/.ssh/authorized_keys của user haidang trên VPS.</li>
+<li>GitHub repo, Settings, Secrets and variables, Actions, thêm: VPS_HOST, VPS_USER, VPS_SSH_KEY (nội dung private key ci_key).</li>
+<li>Xóa file ci_key khỏi máy sau khi đã lưu vào Secrets.</li>
+</ol>
+<pre># .github/workflows/deploy.yml
+name: Deploy
+on:
+  push:
+    branches: [main]
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            source ~/.nvm/nvm.sh
+            /var/www/myapp/deploy.sh</pre>
+<p>Cải tiến: thêm bước test/lint trước deploy (dùng <code>needs:</code>), và bảo vệ nhánh main bằng pull request bắt buộc.</p>
+</section>
+
+<section id="s15">
+<h2>15. Vận hành: log, giám sát, backup, bảo trì</h2>
+<h3>15.1. Xem log ở đâu</h3>
+<table><tr><th>Nội dung</th><th>Lệnh</th></tr>
+<tr><td>Log truy cập Nginx</td><td><code>sudo tail -f /var/log/nginx/access.log</code></td></tr>
+<tr><td>Log lỗi Nginx</td><td><code>sudo tail -f /var/log/nginx/error.log</code></td></tr>
+<tr><td>Log ứng dụng PM2</td><td><code>pm2 logs --lines 100</code></td></tr>
+<tr><td>Log dịch vụ systemd</td><td><code>journalctl -u ten-dich-vu -n 100 --no-pager</code></td></tr>
+<tr><td>Log đăng nhập SSH</td><td><code>sudo journalctl -u ssh -n 100 --no-pager</code></td></tr>
+<tr><td>Các lần đăng nhập gần đây</td><td><code>last -n 20</code></td></tr>
+<tr><td>Tài nguyên máy</td><td><code>htop</code>, <code>df -h</code>, <code>free -h</code></td></tr>
+<tr><td>Cổng đang lắng nghe</td><td><code>sudo ss -tulpn</code></td></tr>
+</table>
+<h3>15.2. Xoay vòng log để không đầy ổ đĩa</h3>
+<p>Nginx đã có logrotate mặc định. Với PM2:</p>
+<pre>pm2 install pm2-logrotate
+pm2 set pm2-logrotate:max_size 10M
+pm2 set pm2-logrotate:retain 7
+pm2 set pm2-logrotate:compress true
+
+sudo journalctl --vacuum-time=14d
+sudo journalctl --vacuum-size=200M</pre>
+<h3>15.3. Backup theo nguyên tắc 3-2-1</h3>
+<p>3 bản sao dữ liệu, trên 2 loại lưu trữ khác nhau, 1 bản nằm ngoài VPS. Cần backup: database, file upload, file .env và cấu hình Nginx. Code đã có trên Git.</p>
+<pre><span class="c"># [VPS] tạo thư mục backup</span>
+mkdir -p /home/haidang/backup
+
+<span class="c"># sudo crontab -e   (crontab của root, chạy 2h sáng mỗi ngày)</span>
+0 2 * * * sudo -u postgres pg_dump appdb | gzip &gt; /home/haidang/backup/db_$(date +\%F).sql.gz
+15 2 * * * tar czf /home/haidang/backup/uploads_$(date +\%F).tar.gz -C /var/www/myapp uploads
+30 2 * * * find /home/haidang/backup -type f -mtime +14 -delete</pre>
+<div class="note warn">Ký tự % trong crontab phải viết thành \% như trên, nếu không cron hiểu sai và lệnh thất bại thầm lặng.</div>
+<p>Đẩy backup ra ngoài VPS bằng rclone (Google Drive/S3) hoặc rsync sang máy khác:</p>
+<pre>sudo apt install -y rclone
+rclone config                                  <span class="c"># tạo remote tên gdrive</span>
+rclone copy /home/haidang/backup gdrive:vps-backup --max-age 2d</pre>
+<p><b>Thử khôi phục định kỳ.</b> Backup chưa thử khôi phục thì chưa đáng tin:</p>
+<pre>sudo -u postgres createdb restore_test
+gunzip -c /home/haidang/backup/db_2026-09-30.sql.gz | sudo -u postgres psql restore_test
+sudo -u postgres psql restore_test -c "\dt"          <span class="c"># xem bảng đã có đủ chưa</span>
+sudo -u postgres dropdb restore_test</pre>
+<p>Ngoài ra bật snapshot/backup của nhà cung cấp VPS để khôi phục cả máy khi hỏng hoàn toàn.</p>
+<h3>15.4. Giám sát uptime và tài nguyên</h3>
+<ul>
+<li><b>Uptime từ bên ngoài:</b> UptimeRobot, Better Stack (gói miễn phí) gọi vào website mỗi vài phút và báo khi sập.</li>
+<li><b>Trên máy:</b> htop, ncdu, df -h; có thể cài Netdata.</li>
+<li><b>Ngưỡng cần để ý:</b> ổ đĩa trên 80%, RAM gần hết và swap tăng liên tục, load average vượt số CPU kéo dài.</li>
+<li>Chuẩn bị endpoint <code>/health</code> trong ứng dụng trả 200 khi hoạt động bình thường.</li>
+</ul>
+<h3>15.5. Bảo trì định kỳ</h3>
+<table><tr><th>Tần suất</th><th>Việc cần làm</th></tr>
+<tr><td>Hằng tuần</td><td>Xem log lỗi, kiểm tra ổ đĩa và RAM, kiểm tra banned IP của fail2ban</td></tr>
+<tr><td>Hằng tháng</td><td>apt update &amp;&amp; apt upgrade, reboot nếu có yêu cầu, thử khôi phục backup</td></tr>
+<tr><td>Mỗi quý</td><td>Rà soát user và SSH key, cập nhật dependency, chạy lynis</td></tr>
+<tr><td>Khi có thông báo</td><td>Gia hạn domain, chứng chỉ, gói VPS</td></tr>
+</table>
+<pre>sudo apt autoremove -y &amp;&amp; sudo apt clean            <span class="c"># dọn gói thừa</span>
+docker system prune -f                               <span class="c"># nếu dùng Docker</span></pre>
+</section>
+
+<section id="s16">
+<h2>16. Bảo mật nâng cao</h2>
+<h3>16.1. Rà soát cổng đang mở</h3>
+<pre>sudo ss -tulpn                           <span class="c"># từ bên trong VPS</span>
+<span class="c"># [LOCAL] quét từ bên ngoài (chỉ quét VPS của chính bạn)</span>
+nmap -Pn 102.245.237.2</pre>
+<p>Từ bên ngoài chỉ nên thấy 22, 80, 443. Bất kỳ cổng nào khác (3000, 4000, 5432, 6379, 27017...) là dấu hiệu cấu hình sai.</p>
+<h3>16.2. Giới hạn tốc độ request trong Nginx</h3>
+<pre># trong khối http {} (hoặc /etc/nginx/conf.d/ratelimit.conf)
+limit_req_zone $binary_remote_addr zone=login:10m rate=5r/m;
+
+# trong server block
+location /api/auth/login {
+    limit_req zone=login burst=5 nodelay;
+    proxy_pass http://127.0.0.1:4000;
+}</pre>
+<h3>16.3. Kiểm tra tổng thể bằng Lynis</h3>
+<pre>sudo apt install -y lynis
+sudo lynis audit system</pre>
+<p>Lynis chấm điểm và gợi ý cải thiện. Không cần làm hết, ưu tiên các mục mức Warning.</p>
+<h3>16.4. Quản lý bí mật (secret)</h3>
+<ul>
+<li>Mỗi môi trường (dev/production) dùng secret khác nhau; secret production chỉ tồn tại trên VPS hoặc trong hệ thống secret của CI.</li>
+<li>Đổi secret khi có người rời dự án hoặc nghi ngờ lộ.</li>
+<li>Nếu lỡ commit secret lên Git: coi như đã lộ, đổi ngay. Chỉ xóa commit là chưa đủ.</li>
+<li>Dùng git-secrets hoặc GitHub secret scanning để phát hiện sớm.</li>
+</ul>
+<h3>16.5. Nguyên tắc quyền tối thiểu</h3>
+<ul>
+<li>Ứng dụng chạy bằng user thường, không chạy bằng root.</li>
+<li>User database chỉ có quyền trên đúng database của app.</li>
+<li>Key CI chỉ được phép chạy deploy (có thể giới hạn bằng <code>command="..."</code> trong authorized_keys).</li>
+<li>Gỡ SSH key của người không còn tham gia dự án khỏi authorized_keys.</li>
+</ul>
+</section>
+
+<section id="s17">
+<h2>17. Tối ưu hiệu năng cơ bản</h2>
+<table><tr><th>Hạng mục</th><th>Cách làm</th><th>Lợi ích</th></tr>
+<tr><td>Nén nội dung</td><td>gzip on trong Nginx (hoặc brotli)</td><td>Giảm 60-80% dung lượng text</td></tr>
+<tr><td>Cache file tĩnh</td><td>expires 30d + Cache-Control immutable cho file có hash</td><td>Tải lại rất nhanh</td></tr>
+<tr><td>HTTP/2</td><td>http2 on trong khối listen 443 ssl</td><td>Tải song song nhiều file</td></tr>
+<tr><td>Tận dụng nhiều CPU</td><td>pm2 start dist/main.js -i max</td><td>Xử lý nhiều request đồng thời</td></tr>
+<tr><td>Chống rò rỉ RAM</td><td>max_memory_restart trong PM2</td><td>Tự khởi động lại khi phình bộ nhớ</td></tr>
+<tr><td>Ảnh</td><td>WebP/AVIF, kích thước phù hợp; next/image</td><td>Giảm băng thông</td></tr>
+<tr><td>CDN</td><td>Cloudflare phía trước cho file tĩnh</td><td>Giảm tải VPS</td></tr>
+<tr><td>Database</td><td>Thêm index cho cột lọc/sắp xếp nhiều; xem truy vấn chậm</td><td>Giảm thời gian phản hồi API</td></tr>
+</table>
+<p>Đo trước khi tối ưu: Lighthouse trong Chrome DevTools, hoặc <code>curl -o /dev/null -s -w "%{time_total}s\n" https://tutor.haiphan.org</code>.</p>
+</section>
+
+<section id="s18">
+<h2>18. Quy trình gỡ lỗi theo tầng</h2>
+<p>Khi website không vào được, đi từ ngoài vào trong. Mỗi tầng kiểm tra một lệnh, tìm ra tầng lỗi đầu tiên rồi dừng:</p>
+<table><tr><th>Tầng</th><th>Kiểm tra</th><th>Nếu lỗi thì</th></tr>
+<tr><td>1. DNS</td><td><code>dig +short tutor.haiphan.org</code></td><td>Sửa bản ghi A, chờ lan truyền</td></tr>
+<tr><td>2. Mạng tới VPS</td><td><code>ping 102.245.237.2</code>; <code>nc -zv 102.245.237.2 443</code></td><td>Kiểm tra VPS có chạy không, firewall panel</td></tr>
+<tr><td>3. Firewall trên máy</td><td><code>sudo ufw status</code></td><td>Mở 80/443</td></tr>
+<tr><td>4. Nginx</td><td><code>systemctl status nginx</code>; <code>sudo nginx -t</code></td><td>Sửa cấu hình, xem error.log</td></tr>
+<tr><td>5. Ứng dụng</td><td><code>curl -I http://127.0.0.1:3000</code>; <code>pm2 status</code></td><td>Xem pm2 logs, chạy lại app</td></tr>
+<tr><td>6. Database</td><td><code>sudo systemctl status postgresql</code>; thử psql</td><td>Xem log PostgreSQL, kiểm tra DATABASE_URL</td></tr>
+<tr><td>7. Tài nguyên</td><td><code>df -h</code>; <code>free -h</code>; <code>dmesg | grep -i kill</code></td><td>Dọn đĩa, thêm swap, nâng cấp gói</td></tr>
+</table>
+<h3>Bảng lỗi thường gặp</h3>
+<table><tr><th>Triệu chứng</th><th>Nguyên nhân thường gặp</th><th>Cách xử lý</th></tr>
+<tr><td>Không vào được bằng IP</td><td>Firewall (UFW / panel) chặn 80/443</td><td><code>sudo ufw status</code>; mở cổng ở panel</td></tr>
+<tr><td>Domain không vào, IP vào được</td><td>DNS chưa trỏ hoặc chưa lan truyền</td><td><code>dig +short domain</code>; chờ hoặc sửa bản ghi A</td></tr>
+<tr><td>502 Bad Gateway</td><td>App Node chưa chạy hoặc sai cổng</td><td><code>pm2 status</code>; <code>curl localhost:3000</code>; <code>pm2 logs</code></td></tr>
+<tr><td>504 Gateway Timeout</td><td>App phản hồi quá chậm hoặc treo</td><td>Xem log, tăng proxy_read_timeout, tối ưu app</td></tr>
+<tr><td>403 Forbidden</td><td>Sai quyền thư mục /var/www hoặc thiếu index</td><td>chmod 755, chown đúng, kiểm tra root và index</td></tr>
+<tr><td>404 khi F5 ở trang con (SPA)</td><td>Thiếu try_files</td><td>Thêm <code>try_files $uri /index.html;</code></td></tr>
+<tr><td>413 Request Entity Too Large</td><td>client_max_body_size mặc định 1 MB</td><td>Tăng client_max_body_size, reload</td></tr>
+<tr><td>nginx -t báo lỗi</td><td>Sai cú pháp, thiếu dấu ;</td><td>Đọc dòng lỗi, sửa rồi reload</td></tr>
+<tr><td>Chuyển hướng lặp vô hạn</td><td>Cloudflare Flexible + certbot redirect</td><td>Đặt Cloudflare SSL sang Full (strict)</td></tr>
+<tr><td>Build bị Killed</td><td>Hết RAM</td><td>Thêm swap (mục 10.2) hoặc build ở CI rồi đẩy lên</td></tr>
+<tr><td>Mất kết nối SSH sau khi sửa sshd</td><td>Cấu hình sai / đổi cổng chưa mở</td><td>Dùng console/VNC của nhà cung cấp</td></tr>
+<tr><td>App không tự chạy sau reboot</td><td>Chưa pm2 save / startup</td><td>Chạy lệnh sudo do <code>pm2 startup</code> in ra, <code>pm2 save</code></td></tr>
+<tr><td>Ổ đĩa đầy</td><td>Log, backup, image Docker cũ</td><td><code>ncdu /</code>; dọn log, <code>docker system prune</code></td></tr>
+<tr><td>Đã cấu hình env nhưng app không nhận</td><td>PM2 giữ env cũ; Next.js cần build lại</td><td><code>pm2 reload --update-env</code>; build lại nếu là NEXT_PUBLIC_*</td></tr>
+</table>
+</section>
+
+<section id="s19">
+<h2>19. Checklist hoàn thành</h2>
+<p>Đánh dấu từng mục trước khi coi là hoàn tất:</p>
+<h3>Bảo mật nền tảng</h3>
+<ul>
+<li>☐ Đã update hệ thống, đặt timezone</li>
+<li>☐ Đã tạo user riêng, đăng nhập bằng SSH key thành công</li>
+<li>☐ Đã tắt đăng nhập root và mật khẩu SSH (kiểm tra bằng sshd -T)</li>
+<li>☐ UFW bật, chỉ mở SSH, 80, 443; firewall panel khớp</li>
+<li>☐ Fail2ban chạy, unattended-upgrades bật</li>
+</ul>
+<h3>Website</h3>
+<ul>
+<li>☐ DNS tutor.haiphan.org trỏ đúng IP</li>
+<li>☐ Nginx chạy, nginx -t không lỗi, có site mặc định chặn domain lạ</li>
+<li>☐ Ứng dụng chạy bằng PM2/systemd/Docker, tự khởi động lại sau reboot (đã thử reboot)</li>
+<li>☐ File .env không nằm trong Git, quyền 600</li>
+<li>☐ Database chỉ lắng nghe localhost, có user riêng cho ứng dụng</li>
+<li>☐ HTTPS hoạt động, HTTP tự chuyển sang HTTPS, certbot renew --dry-run thành công</li>
+</ul>
+<h3>Vận hành</h3>
+<ul>
+<li>☐ Có script/quy trình deploy lặp lại được (và rollback)</li>
+<li>☐ Đã bật backup (snapshot nhà cung cấp + backup database), đã thử khôi phục 1 lần</li>
+<li>☐ Đã thiết lập giám sát uptime có cảnh báo</li>
+<li>☐ Nmap từ ngoài chỉ thấy 22, 80, 443</li>
+</ul>
+</section>
+
+<section id="sA">
+<h2>Phụ lục A. Cheat sheet lệnh</h2>
+<table><tr><th>Việc cần làm</th><th>Lệnh</th></tr>
+<tr><td>Xem dịch vụ</td><td><code>systemctl status nginx | postgresql | fail2ban</code></td></tr>
+<tr><td>Bật/tắt/khởi động lại dịch vụ</td><td><code>sudo systemctl start | stop | restart | reload ten</code></td></tr>
+<tr><td>Xem log dịch vụ trực tiếp</td><td><code>journalctl -u ten -f</code></td></tr>
+<tr><td>Tìm tiến trình chiếm cổng</td><td><code>sudo ss -tulpn | grep :3000</code></td></tr>
+<tr><td>Xem tiến trình nặng</td><td><code>htop</code> (thoát bằng q)</td></tr>
+<tr><td>Tìm thư mục chiếm dung lượng</td><td><code>sudo ncdu /</code></td></tr>
+<tr><td>Sửa quyền thư mục web</td><td><code>sudo chown -R haidang:haidang /var/www/myapp</code></td></tr>
+<tr><td>Kiểm tra site từ dòng lệnh</td><td><code>curl -I https://tutor.haiphan.org</code></td></tr>
+<tr><td>Xem IP đang bị fail2ban chặn</td><td><code>sudo fail2ban-client status sshd</code></td></tr>
+<tr><td>Xem rule firewall</td><td><code>sudo ufw status numbered</code></td></tr>
+<tr><td>Kiểm tra cấu hình Nginx</td><td><code>sudo nginx -t</code></td></tr>
+<tr><td>Xem ngày hết hạn SSL</td><td><code>sudo certbot certificates</code></td></tr>
+<tr><td>Copy file lên VPS</td><td><code>scp file haidang@102.245.237.2:/duong/dan/</code></td></tr>
+<tr><td>Đồng bộ thư mục lên VPS</td><td><code>rsync -avz ./dist/ haidang@102.245.237.2:/var/www/tutor.haiphan.org/</code></td></tr>
+<tr><td>Xem lịch cron</td><td><code>crontab -l</code>; <code>sudo crontab -l</code></td></tr>
+</table>
+</section>
+
+<section id="sB">
+<h2>Phụ lục B. Tóm tắt nhanh toàn bộ quy trình</h2>
+<ol>
+<li>Nhận IP và mật khẩu root, SSH vào: <code>ssh root@IP</code>.</li>
+<li><code>apt update &amp;&amp; apt upgrade -y</code>, cài curl git ufw fail2ban.</li>
+<li>Tạo user haidang, thêm vào sudo, đưa SSH key lên, thử đăng nhập bằng key ở terminal mới.</li>
+<li>Sửa sshd_config: tắt root và mật khẩu, <code>sshd -t</code>, restart ssh.</li>
+<li>UFW: allow OpenSSH, 80, 443, enable. Bật fail2ban.</li>
+<li>Trỏ DNS A record (tutor) về IP, kiểm tra bằng dig.</li>
+<li>Cài Nginx, viết server block cho domain, <code>nginx -t</code> và reload.</li>
+<li>Cài Node bằng nvm, thêm swap nếu RAM thấp, clone code, tạo .env, build.</li>
+<li>Chạy app bằng PM2, <code>pm2 save</code> và <code>pm2 startup</code>, Nginx proxy_pass tới cổng app.</li>
+<li>Cài PostgreSQL (nếu cần), tạo user/db riêng, chỉ localhost.</li>
+<li><code>certbot --nginx -d tutor.haiphan.org</code>, chọn redirect HTTPS.</li>
+<li>Viết deploy.sh (có rollback), cấu hình backup cron và giám sát uptime, thử reboot toàn bộ để chắc mọi thứ tự lên.</li>
+</ol>
+</section>
+
+<section id="sC">
+<h2>Phụ lục C. Áp dụng thực tế: tutor.haiphan.org trỏ về VPS 102.245.237.2</h2>
+<p>Phụ lục này gom các mục 6 đến 13 thành một bản chạy thẳng cho tutor.haiphan.org và VPS 102.245.237.2. Nếu dùng VPS khác, thay IP ở mọi lệnh.</p>
+<h3>C.1. Thông số sử dụng</h3>
+<table><tr><th>Hạng mục</th><th>Giá trị</th></tr>
+<tr><td>Subdomain</td><td>tutor.haiphan.org</td></tr>
+<tr><td>Domain gốc (mua tại Cloudflare)</td><td>haiphan.org</td></tr>
+<tr><td>IP VPS</td><td>102.245.237.2</td></tr>
+<tr><td>Hệ điều hành / web server</td><td>Ubuntu / Nginx</td></tr>
+<tr><td>Ứng dụng</td><td>Frontend cổng 3000, API cổng 4000 (chỉnh theo thực tế)</td></tr>
+<tr><td>User vận hành</td><td>haidang (tạo ở mục 5)</td></tr>
+</table>
+<h3>C.2. Bước 1: Tạo bản ghi DNS trên Cloudflare</h3>
+<table><tr><th>Trường</th><th>Giá trị</th></tr>
+<tr><td>Type</td><td>A</td></tr>
+<tr><td>Name</td><td>tutor</td></tr>
+<tr><td>IPv4 address</td><td>102.245.237.2</td></tr>
+<tr><td>Proxy status</td><td>DNS only (đám mây xám) trong lúc setup</td></tr>
+<tr><td>TTL</td><td>Auto</td></tr>
+</table>
+<h3>C.3. Bước 2: Kiểm tra DNS</h3>
+<pre><span class="c"># [LOCAL]</span>
+dig +short tutor.haiphan.org
+dig +short tutor.haiphan.org @1.1.1.1
+<span class="c"># Kết quả mong đợi: 102.245.237.2</span></pre>
+<h3>C.4. Bước 3: SSH vào VPS và kiểm tra firewall</h3>
+<pre><span class="c"># [LOCAL]</span>
+ssh-keygen -R 102.245.237.2            <span class="c"># chỉ cần khi báo REMOTE HOST IDENTIFICATION HAS CHANGED</span>
+ssh haidang@102.245.237.2
+
+<span class="c"># [VPS]</span>
+sudo ufw status
+sudo ufw allow 80/tcp
+sudo ufw allow 443/tcp</pre>
+<div class="note warn">Nhớ mở cổng 80 và 443 ở firewall của panel nhà cung cấp VPS (nếu có), vì thiếu bước này web không vào được dù UFW đã mở.</div>
+<h3>C.5. Bước 4: Cấu hình Nginx cho tutor.haiphan.org</h3>
+<pre><span class="c"># [VPS]</span>
+sudo apt install -y nginx
+sudo nano /etc/nginx/sites-available/tutor.haiphan.org
+
+server {
+    listen 80;
+    listen [::]:80;
+    server_name tutor.haiphan.org;
+
+    client_max_body_size 20M;
+
+    location / {                                 <span class="c"># frontend</span>
+        proxy_pass http://127.0.0.1:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location /api/ {                             <span class="c"># backend (bỏ nếu không dùng)</span>
+        proxy_pass http://127.0.0.1:4000/;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+
+sudo ln -s /etc/nginx/sites-available/tutor.haiphan.org /etc/nginx/sites-enabled/
+sudo nginx -t &amp;&amp; sudo systemctl reload nginx
+curl -I http://tutor.haiphan.org</pre>
+<div class="note">Nếu ứng dụng chưa chạy, curl trả <b>502 Bad Gateway</b>. Đó là bình thường ở bước này và chứng tỏ DNS với Nginx đã thông; lỗi sẽ hết sau bước 5.</div>
+<h3>C.6. Bước 5: Chạy ứng dụng</h3>
+<pre><span class="c"># [VPS] user haidang, sau khi đã clone code, tạo .env và build (mục 10.3 và 10.4)</span>
+pm2 start npm --name "web" -- start -- -p 3000
+PORT=4000 pm2 start dist/main.js --name "api"
+pm2 save
+curl -I http://127.0.0.1:3000          <span class="c"># phải trả 200 trước khi thử qua domain</span></pre>
+<h3>C.7. Bước 6: Cấp SSL</h3>
+<pre>sudo apt install -y certbot python3-certbot-nginx
+sudo certbot --nginx -d tutor.haiphan.org
+curl -I https://tutor.haiphan.org
+sudo certbot renew --dry-run
+
+<span class="c"># Kết quả mong đợi: HTTP/2 200</span></pre>
+<h3>C.8. Bước 7 (tùy chọn): Bật proxy Cloudflare</h3>
+<ol>
+<li>Cloudflare, DNS, Records: bấm đám mây xám của bản ghi tutor để chuyển thành Proxied (cam), Save.</li>
+<li>SSL/TLS: chọn chế độ Full (strict).</li>
+<li>Trên VPS, làm mục 7.5 để Nginx và log thấy IP người dùng thật.</li>
+</ol>
+<p>Nếu không cần CDN hay lớp bảo vệ của Cloudflare, có thể để xám mãi; hệ thống vẫn chạy bình thường.</p>
+<h3>C.9. Kiểm tra cuối và lỗi thường gặp</h3>
+<table><tr><th>Hiện tượng</th><th>Nguyên nhân thường gặp</th><th>Cách xử lý</th></tr>
+<tr><td>dig không ra 102.245.237.2</td><td>Name nhập sai, hoặc đang bật proxy cam</td><td>Name phải là tutor; chuyển bản ghi sang xám để kiểm tra</td></tr>
+<tr><td>Không vào được từ bên ngoài, timeout</td><td>Firewall UFW hoặc panel chặn 80/443</td><td>ufw status; mở 80/443 ở panel VPS</td></tr>
+<tr><td>502 Bad Gateway</td><td>Ứng dụng chưa chạy hoặc sai cổng</td><td>pm2 status; curl -I http://127.0.0.1:3000</td></tr>
+<tr><td>Certbot báo lỗi khi cấp chứng chỉ</td><td>DNS chưa trỏ, cổng 80 bị chặn, hoặc đang bật proxy</td><td>Làm đúng C.3, mở cổng 80, chuyển bản ghi sang xám</td></tr>
+<tr><td>Lỗi 525/526 sau khi bật proxy</td><td>VPS chưa có HTTPS hợp lệ cho tutor.haiphan.org</td><td>Cấp lại certbot, kiểm tra Nginx lắng nghe 443</td></tr>
+<tr><td>Chuyển hướng lặp vô hạn</td><td>SSL mode Flexible trên Cloudflare</td><td>Đổi sang Full (strict)</td></tr>
+</table>
+<div class="note tip"><b>Checklist cuối:</b> dig ra đúng IP, curl -I https://tutor.haiphan.org trả 200, ổ khóa hợp lệ trên trình duyệt, pm2 status hiển thị online, và <code>sudo certbot renew --dry-run</code> thành công.</div>
+</section>
+
+<section id="sRef">
+<h2>Tài liệu tham khảo</h2>
+<ul>
+<li>Nginx: nginx.org/en/docs</li>
+<li>Certbot: certbot.eff.org</li>
+<li>PM2: pm2.keymetrics.io/docs</li>
+<li>Docker: docs.docker.com</li>
+<li>PostgreSQL: postgresql.org/docs</li>
+<li>Ubuntu Server: ubuntu.com/server/docs</li>
+<li>Cloudflare SSL modes: developers.cloudflare.com/ssl</li>
+</ul>
+</section>
+</main>
+</div>
+<script>
+(function () {
+  var L = [
+    {id:'s0', g:'Bắt đầu', s:'Cách dùng tài liệu', quiz:[
+      {q:"Ký hiệu [LOCAL] trong tài liệu nghĩa là gì?", o:["Lệnh chạy trên máy cá nhân của bạn","Lệnh chạy trên VPS","Lệnh chạy trong Nginx","Lệnh chạy trong Docker"], a:0, w:"[LOCAL] là máy cá nhân, [VPS] là máy chủ sau khi SSH vào."},
+      {q:"Khi dùng VPS khác, bạn cần thay những gì?", o:["Chỉ tên user","Tên miền và IP VPS trong mọi lệnh","Không cần thay gì","Chỉ phiên bản Ubuntu"], a:1, w:"Tên miền và IP là hai giá trị xuất hiện trong hầu hết lệnh."}
+    ], lab:[
+      {t:"Ghi lại IP VPS, tên miền và tên user vận hành vào một file ghi chú riêng.", v:"Có đủ 3 thông tin, IP là 102.245.237.2."},
+      {t:"Ở mục 2.3, đánh dấu đâu là lệnh [LOCAL] và đâu là lệnh [VPS].", v:"Nêu đúng cả hai nhóm lệnh."}
+    ]},
+    {id:'s1', g:'Bắt đầu', s:'Tổng quan quy trình', quiz:[
+      {q:"Vì sao chỉ Nginx được nhận kết nối từ Internet?", o:["Để tiết kiệm RAM","Ứng dụng và database chỉ lắng nghe ở 127.0.0.1, an toàn hơn","Vì Nginx nhanh hơn","Không có lý do"], a:1, w:"Nguyên tắc xuyên suốt: chỉ 22, 80, 443 mở ra ngoài."},
+      {q:"Giai đoạn nào nên làm trước khi đưa web lên?", o:["Deploy app","Hardening (cập nhật, user riêng, UFW, Fail2ban)","Cài SSL","Cài Docker"], a:1, w:"Bảo mật nền tảng phải có trước khi phơi web ra Internet."}
+    ], lab:[
+      {t:"Liệt kê 8 giai đoạn A–H kèm thời gian ước tính.", v:"Danh sách đủ 8 giai đoạn."},
+      {t:"Đối chiếu nguyên tắc xuyên suốt với VPS của bạn: chỉ 22, 80, 443 mở công khai.", v:"Chạy sudo ss -tulpn trên VPS, các dịch vụ nội bộ ở 127.0.0.1."}
+    ]},
+    {id:'s2', g:'Bắt đầu', s:'Chuẩn bị', quiz:[
+      {q:"Ai có private key thì có thể làm gì?", o:["Chỉ xem được public key","Đăng nhập được vào máy có public key tương ứng","Không làm được gì","Chỉnh sửa DNS"], a:1, w:"Vì vậy private key phải giữ bí mật và nên đặt passphrase."},
+      {q:"File ~/.ssh/config dùng để làm gì?", o:["Đổi mật khẩu VPS","Đặt bí danh để gõ ssh myvps thay cho đầy đủ user và IP","Mở cổng firewall","Cài Node.js"], a:1, w:"Ví dụ: Host myvps với HostName, User và IdentityFile."}
+    ], lab:[
+      {t:"Tạo cặp khóa ed25519 có passphrase trên máy cá nhân (mục 2.3).", v:"ls ~/.ssh/id_ed25519.pub có file."},
+      {t:"Thêm mục Host myvps vào ~/.ssh/config (mục 2.4).", v:"ssh -G myvps hiển thị hostname 102.245.237.2."}
+    ]},
+    {id:'s3', g:'Bảo mật VPS', s:'Kết nối VPS lần đầu', quiz:[
+      {q:"Lần đầu SSH hỏi xác nhận fingerprint, bạn nên trả lời gì?", o:["no","yes","Bỏ qua và Ctrl+C","Nhập mật khẩu DNS"], a:1, w:"Gõ yes để chấp nhận fingerprint của server."},
+      {q:"Lỗi Permission denied khi đăng nhập root thường do đâu?", o:["Sai mật khẩu, sai key, hoặc nhà cung cấp chưa bật đăng nhập bằng mật khẩu","VPS quá nhanh","Thiếu Nginx","Sai múi giờ"], a:0, w:"Kiểm tra lại thông tin đăng nhập từ nhà cung cấp."}
+    ], lab:[
+      {t:"SSH vào VPS bằng root lần đầu (mục 3.1).", v:"whoami trả về root."},
+      {t:"Chạy lsb_release -a, free -h, df -h (mục 3.2).", v:"Thấy Ubuntu 22.04 hoặc 24.04 và RAM, ổ đĩa."}
+    ]},
+    {id:'s4', g:'Bảo mật VPS', s:'Cập nhật hệ thống', quiz:[
+      {q:"apt update khác apt upgrade ở điểm nào?", o:["Không khác gì","update làm mới danh sách gói, upgrade nâng cấp các gói đã cài","update xóa gói, upgrade cài gói","update chỉ chạy trên Windows"], a:1, w:"Chạy update trước rồi mới upgrade."},
+      {q:"Gặp lỗi Could not get lock thì nên làm gì?", o:["Xóa file lock","Chờ 1–2 phút rồi chạy lại","Reboot ngay","Bỏ qua và cài tiếp"], a:1, w:"VPS đang tự cập nhật nền. Không xóa file lock."}
+    ], lab:[
+      {t:"Đặt timezone Asia/Ho_Chi_Minh (mục 4.2).", v:"timedatectl hiển thị Time zone: Asia/Ho_Chi_Minh."},
+      {t:"Cài các gói nền: curl, git, ufw, fail2ban, htop, ncdu (mục 4.1).", v:"which ufw fail2ban htop có đường dẫn."}
+    ]},
+    {id:'s5', g:'Bảo mật VPS', s:'User riêng và bảo mật SSH', quiz:[
+      {q:"Vì sao không nên chạy website hằng ngày bằng root?", o:["Root không chạy được Node","Một lỗi gõ nhầm hoặc app bị khai thác sẽ có toàn quyền hệ thống","Root chậm hơn","Không có lý do"], a:1, w:"Dùng user haidang có sudo để giới hạn thiệt hại."},
+      {q:"Trước khi khóa đăng nhập root, bạn phải làm gì?", o:["Xóa user haidang","Đăng nhập thành công bằng haidang + SSH key, giữ phiên root cũ mở","Tắt UFW","Đổi cổng SSH"], a:1, w:"Giữ đường lui phòng khi cấu hình sai."},
+      {q:"Lệnh nào kiểm tra cú pháp sshd trước khi restart?", o:["sudo sshd -t","ssh -T","sshd --reload","systemctl test ssh"], a:0, w:"sshd -t không in gì nghĩa là cú pháp đúng."}
+    ], lab:[
+      {t:"Tạo user haidang và thêm vào nhóm sudo (mục 5.1).", v:"id haidang có nhóm sudo."},
+      {t:"Đưa SSH key cho haidang và đăng nhập không cần mật khẩu (mục 5.2).", v:"ssh haidang@102.245.237.2 vào được bằng key."},
+      {t:"Khóa root và đăng nhập bằng mật khẩu (mục 5.3).", v:"sudo sshd -T cho permitrootlogin no và passwordauthentication no."}
+    ]},
+    {id:'s6', g:'Bảo mật VPS', s:'UFW và Fail2ban', quiz:[
+      {q:"ufw default deny incoming có nghĩa là gì?", o:["Chặn mọi kết nối vào, trừ khi có rule allow","Chặn mọi kết nối ra","Xóa toàn bộ rule","Bật firewall ngay"], a:0, w:"Whitelist: chỉ cổng được allow mới vào được. Vẫn cần enable để có hiệu lực."},
+      {q:"Rule allow 80 ở trên, rule deny from IP thêm sau. IP đó có vào cổng 80 không?", o:["Không, deny luôn thắng","Có, rule khớp đầu tiên thắng","Chỉ khi reload","Phụ thuộc IPv6"], a:1, w:"Dùng ufw insert 1 deny from IP để đưa rule lên đầu."},
+      {q:"Fail2ban với maxretry=5, findtime=10m, bantime=1h nghĩa là gì?", o:["Chặn 5 phút","5 lần sai trong 10 phút thì chặn IP 1 giờ","Chặn vĩnh viễn","5 lần đăng nhập mỗi giờ"], a:1, w:"Đếm số lần sai trong findtime; vượt maxretry thì chặn trong bantime."}
+    ], lab:[
+      {t:"Bật UFW đúng thứ tự: limit OpenSSH, allow 80 và 443, rồi enable (mục 6.2).", v:"sudo ufw status verbose có 22/tcp, 80/tcp, 443/tcp và các dòng (v6)."},
+      {t:"Bật Fail2ban với jail sshd (mục 6.8).", v:"sudo fail2ban-client status sshd chạy được."},
+      {t:"Kiểm tra cổng 3000 đóng từ ngoài (mục 6.7).", v:"nc -zv -w 3 102.245.237.2 3000 báo timed out hoặc failed."}
+    ]},
+    {id:'s7', g:'Tên miền & Web', s:'Trỏ tên miền (DNS)', quiz:[
+      {q:"Đám mây xám (DNS only) thường dùng khi nào?", o:["Khi setup và cấp SSL","Khi muốn ẩn IP hoàn toàn","Khi dùng Docker","Không bao giờ dùng"], a:0, w:"Để xám khi cấp chứng chỉ HTTP-01, cấp xong mới bật cam."},
+      {q:"Vì sao nên tránh chế độ SSL Flexible của Cloudflare?", o:["Chậm hơn","Gây vòng lặp chuyển hướng và đoạn Cloudflare–VPS không mã hóa","Không hỗ trợ HTTPS","Tốn tiền"], a:1, w:"Nên dùng Full (strict)."}
+    ], lab:[
+      {t:"Tạo bản ghi A cho tutor trỏ về 102.245.237.2, DNS only (mục 7.4).", v:"dig +short tutor.haiphan.org trả 102.245.237.2."},
+      {t:"Kiểm tra DNS qua resolver 1.1.1.1 (mục 7.2).", v:"dig +short tutor.haiphan.org @1.1.1.1 trả đúng IP."}
+    ]},
+    {id:'s8', g:'Tên miền & Web', s:'Cài đặt và làm quen Nginx', quiz:[
+      {q:"Quy tắc an toàn trước khi reload Nginx là gì?", o:["reload rồi kiểm tra","nginx -t rồi mới reload","restart máy","Xóa sites-enabled"], a:1, w:"Nếu -t lỗi, reload không chạy và site vẫn hoạt động."},
+      {q:"sites-enabled chứa gì?", o:["Symlink tới các site đang bật","Log lỗi","Chứng chỉ SSL","Mật khẩu root"], a:0, w:"Các symlink trỏ tới file trong sites-available."}
+    ], lab:[
+      {t:"Cài Nginx và mở trang Welcome (mục 8.1).", v:"curl -I http://102.245.237.2 trả về HTTP 200."},
+      {t:"Tạo site mặc định trả về 444 (mục 8.4).", v:"Gọi bằng domain lạ không nhận được nội dung site."}
+    ]},
+    {id:'s9', g:'Tên miền & Web', s:'Triển khai website tĩnh', quiz:[
+      {q:"try_files $uri $uri/ /index.html; dùng cho loại ứng dụng nào?", o:["Ứng dụng SPA như React Router","Database","Chứng chỉ SSL","Cron job"], a:0, w:"Giúp F5 ở trang con không bị 404."},
+      {q:"Cờ --delete trong rsync làm gì?", o:["Xóa file trên VPS không còn ở máy bạn","Xóa file trên máy bạn","Xóa log Nginx","Không làm gì"], a:0, w:"Kiểm tra kỹ đường dẫn đích trước khi chạy."}
+    ], lab:[
+      {t:"Tạo thư mục /var/www/tutor.haiphan.org và đẩy thư mục dist bằng rsync (mục 9.1).", v:"ls /var/www/tutor.haiphan.org hiển thị file index.html."},
+      {t:"Viết server block tĩnh, nginx -t và reload (mục 9.2).", v:"curl -I http://tutor.haiphan.org trả HTTP/1.1 200 OK."}
+    ]},
+    {id:'s10', g:'Ứng dụng & dữ liệu', s:'Triển khai ứng dụng Node.js', quiz:[
+      {q:"Vì sao biến NEXT_PUBLIC_ phải có trước khi npm run build?", o:["Được nhúng vào bản build","Đọc lúc runtime","Đổi cổng","Không có lý do"], a:0, w:"Đổi các biến này cần build lại."},
+      {q:"Vì sao nên thêm swap cho VPS 2 GB khi build Next.js?", o:["Tăng băng thông","Build có thể bị kill do hết RAM","Tăng bảo mật SSH","Thay Nginx"], a:1, w:"Swap là lưới an toàn khi RAM không đủ."},
+      {q:"proxy_pass http://127.0.0.1:4000/; với location /api/ có tác dụng gì?", o:["Thêm /api vào đường dẫn","Cắt tiền tố /api trước khi chuyển tới backend","Không đổi gì","Lỗi cú pháp"], a:1, w:"Bỏ dấu / cuối thì backend nhận nguyên /api/..."}
+    ], lab:[
+      {t:"Cài Node.js bằng nvm dưới user haidang (mục 10.1).", v:"node -v và npm -v hiển thị phiên bản."},
+      {t:"Chạy web và api bằng PM2 rồi pm2 save (mục 10.5).", v:"pm2 status hiển thị online cho web và api."},
+      {t:"Cấu hình Nginx reverse proxy (mục 10.6).", v:"curl -I http://tutor.haiphan.org trả 200, hoặc 502 nếu app chưa chạy."}
+    ]},
+    {id:'s11', g:'Ứng dụng & dữ liệu', s:'Triển khai bằng Docker', quiz:[
+      {q:"Vì sao Docker có thể vượt qua UFW?", o:["Docker tự thêm rule iptables trước UFW khi publish cổng","Docker tắt UFW","Docker không dùng iptables","Docker chỉ chạy trên Windows"], a:0, w:"Nên bind 127.0.0.1:PORT:PORT."},
+      {q:"Cách publish an toàn cho app sau Nginx là gì?", o:["3000:3000","127.0.0.1:4000:4000","0.0.0.0:4000:4000","Không publish"], a:1, w:"Chỉ Nginx trên host truy cập được app."}
+    ], lab:[
+      {t:"Cài Docker và chạy hello-world (mục 11.1).", v:"docker run --rm hello-world in thông báo thành công."},
+      {t:"Chạy docker compose với cổng bind 127.0.0.1 (mục 11.3).", v:"ss -tulpn cho thấy 127.0.0.1:4000, không phải 0.0.0.0:4000."}
+    ]},
+    {id:'s12', g:'Ứng dụng & dữ liệu', s:'Cài đặt cơ sở dữ liệu', quiz:[
+      {q:"PostgreSQL phải lắng nghe ở đâu?", o:["127.0.0.1 (localhost)","0.0.0.0","Mọi IP công khai","Chỉ qua Docker"], a:0, w:"Kiểm tra bằng sudo ss -tulpn | grep 5432."},
+      {q:"Muốn quản trị DB từ máy cá nhân nên làm gì?", o:["Mở cổng 5432 ra Internet","Dùng SSH tunnel","Tắt firewall","Dùng user postgres"], a:1, w:"ssh -L 5433:127.0.0.1:5432 haidang@102.245.237.2."}
+    ], lab:[
+      {t:"Tạo user và database riêng cho app (mục 12.1).", v:"Trong psql, \\l có appdb và owner appuser."},
+      {t:"Kiểm tra PostgreSQL chỉ lắng nghe localhost (mục 12.1).", v:"ss -tulpn | grep 5432 cho 127.0.0.1:5432."}
+    ]},
+    {id:'s13', g:'Ứng dụng & dữ liệu', s:'Cài SSL miễn phí', quiz:[
+      {q:"Điều kiện nào cần có trước khi cấp chứng chỉ Let's Encrypt?", o:["DNS trỏ đúng về VPS và cổng 80 mở","Đã cài Docker","Đã có chứng chỉ tự ký","Đã tắt UFW"], a:0, w:"HTTP-01 cần truy cập được qua cổng 80."},
+      {q:"Lệnh nào kiểm tra gia hạn tự động?", o:["sudo certbot renew --dry-run","sudo certbot delete","sudo nginx -s stop","pm2 save"], a:0, w:"Chứng chỉ có hạn 90 ngày nên cần gia hạn tự động."}
+    ], lab:[
+      {t:"Cấp chứng chỉ bằng certbot --nginx (mục 13.1).", v:"curl -I https://tutor.haiphan.org trả HTTP/2 200."},
+      {t:"Chạy thử gia hạn (mục 13.2).", v:"sudo certbot renew --dry-run thành công."}
+    ]},
+    {id:'s14', g:'Vận hành', s:'Quy trình cập nhật (deploy)', quiz:[
+      {q:"Script deploy có rollback tự động có hoàn tác được migration database không?", o:["Có, luôn luôn","Không, chỉ rollback code; migration cần backup và kế hoạch riêng","Có, nếu dùng PM2","Không cần làm gì"], a:1, w:"Backup trước khi migrate."},
+      {q:"Trong GitHub Actions, secret nào lưu private key của CI?", o:["VPS_SSH_KEY","VPS_HOST","VPS_USER","DEPLOY_TOKEN"], a:0, w:"Lưu trong Settings, Secrets and variables, Actions."}
+    ], lab:[
+      {t:"Tạo /var/www/myapp/deploy.sh và chmod +x (mục 14.1).", v:"ls -l deploy.sh có quyền x."},
+      {t:"Chạy deploy.sh thành công.", v:"Output có dòng Deploy thành công."}
+    ]},
+    {id:'s15', g:'Vận hành', s:'Log, giám sát, backup', quiz:[
+      {q:"Backup 3-2-1 nghĩa là gì?", o:["3 ngày, 2 lần, 1 lần khôi phục","3 bản sao, 2 loại lưu trữ, 1 bản ngoài VPS","3 VPS, 2 DB, 1 Nginx","3 user, 2 key, 1 firewall"], a:1, w:"Và nên thử khôi phục định kỳ."},
+      {q:"Trong crontab, ký tự % phải viết thế nào?", o:["\\%","%%","@%","Không cần"], a:0, w:"Nếu không escape, lệnh thất bại thầm lặng."}
+    ], lab:[
+      {t:"Cấu hình cron backup database (mục 15.3).", v:"crontab -l hiển thị dòng pg_dump với \\%."},
+      {t:"Thử khôi phục vào restore_test rồi xóa (mục 15.3).", v:"\\dt trên restore_test có bảng, sau đó dropdb đã chạy."}
+    ]},
+    {id:'s16', g:'Vận hành', s:'Bảo mật nâng cao', quiz:[
+      {q:"Nếu lỡ commit secret lên Git thì nên làm gì?", o:["Chỉ xóa commit","Coi như đã lộ, đổi secret ngay","Không làm gì","Đổi tên repo"], a:1, w:"Xóa commit là chưa đủ."},
+      {q:"limit_req dùng để làm gì?", o:["Chống spam và dò mật khẩu ở endpoint đăng nhập","Nén file","Cấp SSL","Đổi cổng SSH"], a:0, w:"Ví dụ limit_req_zone rate=5r/m cho /api/auth/login."}
+    ], lab:[
+      {t:"Quét cổng từ ngoài (mục 16.1). Chỉ quét VPS của bạn.", v:"nmap -Pn 102.245.237.2 chỉ báo open ở 22, 80, 443."},
+      {t:"Chạy lynis audit system (mục 16.3).", v:"Lynis cho ra hardening index và danh sách gợi ý."}
+    ]},
+    {id:'s17', g:'Vận hành', s:'Tối ưu hiệu năng', quiz:[
+      {q:"Trước khi tối ưu nên làm gì?", o:["Đo trước, ví dụ curl -w time_total","Tối ưu ngay","Xóa log","Tắt gzip"], a:0, w:"Đo trước để biết chỗ thật sự chậm."},
+      {q:"gzip on thường giảm dung lượng text khoảng bao nhiêu?", o:["Khoảng 60–80%","Khoảng 1%","Tăng gấp đôi","Không đổi"], a:0, w:"Áp dụng cho CSS, JS, JSON, SVG, text."}
+    ], lab:[
+      {t:"Bật gzip trong Nginx (mục 17).", v:"curl -H \"Accept-Encoding: gzip\" -I https://tutor.haiphan.org có Content-Encoding: gzip."},
+      {t:"Đo thời gian phản hồi bằng curl -w.", v:"Có giá trị time_total in ra."}
+    ]},
+    {id:'s18', g:'Vận hành', s:'Quy trình gỡ lỗi theo tầng', quiz:[
+      {q:"Khi website không vào được, nên kiểm tra theo thứ tự nào?", o:["Từ trong ra ngoài","Từ ngoài vào trong: DNS → mạng → firewall → Nginx → app → DB","Ngẫu nhiên","Chỉ kiểm tra DB"], a:1, w:"Dừng ở tầng lỗi đầu tiên tìm được."},
+      {q:"Lỗi 502 Bad Gateway thường nghĩa là gì?", o:["App Node chưa chạy hoặc sai cổng","DNS hỏng","Ổ đĩa đầy","Mất SSH"], a:0, w:"Kiểm tra pm2 status và curl localhost:3000."}
+    ], lab:[
+      {t:"Đi qua 7 tầng gỡ lỗi theo thứ tự (mục 18).", v:"Ghi lại tầng đầu tiên có lỗi, hoặc ghi là không có lỗi."},
+      {t:"Kiểm tra app bằng pm2 status và curl -I http://127.0.0.1:3000.", v:"Trả về 200 khi app chạy."}
+    ]},
+    {id:'s19', g:'Vận hành', s:'Checklist hoàn thành', quiz:[
+      {q:"Sau khi hoàn tất, nmap từ ngoài nên thấy những cổng nào?", o:["22, 80, 443","3000, 4000, 5432","Tất cả cổng","Không cổng nào"], a:0, w:"Các cổng khác là dấu hiệu cấu hình sai."},
+      {q:"Có nên thử reboot toàn bộ trước khi kết thúc không?", o:["Có, để chắc app tự lên sau reboot","Không bao giờ","Chỉ trên Windows","Chỉ khi lỗi"], a:0, w:"Checklist yêu cầu thử reboot."}
+    ], lab:[
+      {t:"Hoàn tất các mục trong Bảo mật nền tảng (mục 19).", v:"Mọi mục đều đúng khi kiểm tra."},
+      {t:"Hoàn tất các mục trong Website và Vận hành (mục 19).", v:"Đã thử reboot và app tự khởi động."}
+    ]},
+    {id:'sC', g:'Áp dụng & phụ lục', s:'Áp dụng thực tế tutor.haiphan.org', quiz:[
+      {q:"Ở ô Name của bản ghi DNS, bạn gõ gì?", o:["tutor","tutor.haiphan","haiphan.org","www"], a:0, w:"Cloudflare tự nối thành tutor.haiphan.org."},
+      {q:"Sau bước 4 (Nginx), curl trả 502 có bình thường không?", o:["Không, phải sửa ngay","Bình thường, vì app chưa chạy; lỗi hết sau bước 5","Lỗi DNS","Lỗi SSL"], a:1, w:"Chứng tỏ DNS với Nginx đã thông."}
+    ], lab:[
+      {t:"Làm C.2–C.3: tạo bản ghi DNS và kiểm tra dig.", v:"dig +short tutor.haiphan.org trả 102.245.237.2."},
+      {t:"Làm C.4–C.5: mở 80/443 và cấu hình Nginx cho tutor.", v:"nginx -t báo ok, curl -I http://tutor.haiphan.org có phản hồi."},
+      {t:"Làm C.6–C.7: chạy app, cấp SSL.", v:"curl -I https://tutor.haiphan.org trả HTTP/2 200."}
+    ]}
+  ];
+  var ADV = {
+    s3: {quiz:[
+      {q:"Sau khi cài lại hệ điều hành VPS, ssh báo REMOTE HOST IDENTIFICATION HAS CHANGED. Cách xử lý đúng nhất?", o:["Xóa toàn bộ thư mục ~/.ssh","Chạy ssh-keygen -R 102.245.237.2 rồi kết nối lại và đối chiếu fingerprint với panel nhà cung cấp","Tắt StrictHostKeyChecking vĩnh viễn","Bỏ qua cảnh báo"], a:1, w:"Cảnh báo này là bình thường sau reinstall nhưng cũng có thể là tấn công; chỉ gỡ khóa host cũ rồi xác minh fingerprint mới."}
+    ], lab:[
+      {t:"Giả lập: chạy ssh-keygen -R 102.245.237.2, kết nối lại và đối chiếu fingerprint với panel nhà cung cấp.", v:"known_hosts có dòng mới và fingerprint khớp panel."}
+    ]},
+    s4: {quiz:[
+      {q:"Tồn tại /var/run/reboot-required trên VPS chạy web 24/7. Hành động hợp lý nhất?", o:["Reboot ngay giữa giờ cao điểm","Bỏ qua mãi mãi","Lên lịch reboot vào giờ ít người dùng và kiểm tra app tự lên sau reboot","Xóa file đó"], a:2, w:"Bản vá kernel chỉ có hiệu lực sau reboot; cần lên kế hoạch và đã cấu hình PM2 startup."}
+    ], lab:[
+      {t:"Bật unattended-upgrades, chạy --dry-run --debug và đọc log (mục 6.10).", v:"systemctl list-timers hiện apt-daily-upgrade.timer; log không có lỗi."}
+    ]},
+    s5: {quiz:[
+      {q:"Bạn đặt PasswordAuthentication no trong sshd_config nhưng sshd -T vẫn hiện passwordauthentication yes. Nguyên nhân khả dĩ nhất?", o:["sshd chưa được cài","File trong /etc/ssh/sshd_config.d/ (ví dụ 50-cloud-init.conf) ghi đè","UFW chặn","Sai múi giờ"], a:1, w:"Luôn kiểm tra giá trị hiệu lực bằng sshd -T, không chỉ đọc file chính."},
+      {q:"ssh-copy-id xong nhưng đăng nhập vẫn hỏi mật khẩu. Kiểm tra đầu tiên?", o:["Đổi múi giờ","Quyền .ssh (700), authorized_keys (600) và chủ sở hữu haidang","Cài lại Nginx","Tăng MaxAuthTries"], a:1, w:"Sai quyền hoặc chủ sở hữu là nguyên nhân gần như luôn đúng."}
+    ], lab:[
+      {t:"Tạo file /tmp/sshd_bad với một dòng sai cú pháp rồi chạy sudo sshd -t -f /tmp/sshd_bad để xác nhận sshd -t bắt lỗi.", v:"Có thông báo lỗi chỉ rõ dòng sai."},
+      {t:"Từ terminal thứ ba xác nhận: ssh root@102.245.237.2 bị từ chối, ssh haidang@102.245.237.2 vẫn vào được.", v:"Root báo Permission denied (publickey)."}
+    ]},
+    s6: {quiz:[
+      {q:"Vừa ufw enable thì phiên SSH mới bị treo. Cách phục hồi nhanh nhất?", o:["Chờ vài giờ","Vào console/VNC của nhà cung cấp và chạy ufw allow OpenSSH","Cài lại VPS","Đổi DNS"], a:1, w:"Luôn biết cách vào bằng console; thứ tự đúng là allow SSH trước khi enable."},
+      {q:"Docker publish 5432:5432. ufw status không có rule 5432 nhưng nmap từ ngoài thấy 5432 open. Giải thích và cách sửa?", o:["nmap sai","Docker tự thêm rule iptables trước UFW; bind 127.0.0.1:5432:5432 và quét lại","UFW hỏng","DNS lỗi"], a:1, w:"Quét lại từ ngoài sau khi sửa."},
+      {q:"Bạn chỉ cho phép IP nhà vào SSH nhưng nhà mạng đổi IP hằng ngày. Rủi ro chính?", o:["Chậm hơn","Tự khóa mình ra khỏi VPS","Mất DNS","Không có rủi ro"], a:1, w:"Chỉ dùng khi IP cố định; luôn có đường vào bằng console."}
+    ], lab:[
+      {t:"Chèn rule ufw insert 1 deny from 198.51.100.7, xem status numbered, rồi xóa đúng rule đó theo số (mục 6.3).", v:"Rule deny ở vị trí 1 và sau khi xóa không còn."},
+      {t:"Chặn và gỡ chặn thủ công bằng fail2ban-client set sshd banip / unbanip, kiểm tra iptables -L -n | grep f2b (mục 6.9).", v:"Thấy IP trong banned list rồi biến mất sau unban."}
+    ]},
+    s7: {quiz:[
+      {q:"dig trả về IP bắt đầu bằng 104. hoặc 172.67. thay vì IP VPS. Kết luận đúng?", o:["VPS bị hỏng","Bản ghi đang bật proxy cam; đây là hành vi bình thường","DNS sai hoàn toàn","Cần cài lại Nginx"], a:1, w:"Muốn kiểm tra IP gốc thì tạm để xám hoặc dùng curl --resolve."},
+      {q:"Sau khi bật proxy cam, người dùng gặp lỗi 525. Nghi ngờ đầu tiên?", o:["Sai TTL","VPS chưa có HTTPS hợp lệ ở cổng 443 trong khi chế độ Full/Full (strict)","DNS chưa lan truyền","Fail2ban chặn"], a:1, w:"Cấp lại certbot, kiểm tra Nginx lắng nghe 443."}
+    ], lab:[
+      {t:"Gọi thẳng VPS bỏ qua Cloudflare: curl -I --resolve tutor.haiphan.org:443:102.245.237.2 https://tutor.haiphan.org (mục 7.8).", v:"Nhận phản hồi từ VPS, giúp tách lỗi VPS với lỗi Cloudflare."}
+    ]},
+    s8: {quiz:[
+      {q:"Hai server block cùng server_name tutor.haiphan.org. Nginx làm gì?", o:["Chạy cả hai","Cảnh báo conflicting server name và dùng block đầu tiên","Sập ngay","Không báo gì"], a:1, w:"nginx -t sẽ in cảnh báo; nên giữ một server block cho mỗi tên."},
+      {q:"Bạn sửa cấu hình nhưng quên dấu ; rồi chạy systemctl restart nginx mà không test. Hậu quả có thể là?", o:["Không có","Nginx không lên và site sập","Chỉ log lỗi","Tự động rollback"], a:1, w:"reload sau nginx -t an toàn hơn vì lỗi sẽ chặn reload."}
+    ], lab:[
+      {t:"Tạo bản sao cấu hình, cố tình bỏ dấu ; rồi chạy sudo nginx -t và đọc dòng lỗi, sau đó sửa lại.", v:"nginx -t báo lỗi chỉ rõ dòng, sau khi sửa báo syntax is ok."}
+    ]},
+    s9: {quiz:[
+      {q:"Site SPA vào /courses/12 trực tiếp hoặc F5 thì 404. Sửa gì?", o:["Tăng RAM","Thêm try_files $uri $uri/ /index.html","Cấp lại SSL","Đổi DNS"], a:1, w:"SPA cần trả index.html cho mọi đường dẫn không phải file."},
+      {q:"Cache file tĩnh 30d immutable cho cả index.html thì lỗi gì xảy ra?", o:["Không lỗi","Người dùng không thấy bản mới sau khi deploy","Nginx sập","SSL hỏng"], a:1, w:"File có hash cache lâu, còn index.html nên no-cache."}
+    ], lab:[
+      {t:"Kiểm tra header: file js có Cache-Control immutable, index.html có no-cache (mục 9.2).", v:"curl -I trả đúng Cache-Control cho từng loại file."}
+    ]},
+    s10: {quiz:[
+      {q:"pm2 status hiện online nhưng curl domain trả 502. Hướng kiểm tra hợp lý?", o:["Cài lại Node","So khớp cổng proxy_pass với cổng app thực sự lắng nghe, curl http://127.0.0.1:PORT","Đổi DNS","Tắt UFW"], a:1, w:"502 thường là Nginx không nối được tới cổng nội bộ."},
+      {q:"Đổi NEXT_PUBLIC_API_URL trong .env rồi pm2 restart nhưng web vẫn dùng giá trị cũ. Vì sao?", o:["PM2 lỗi","Biến NEXT_PUBLIC_ được nhúng lúc build nên cần build lại","Nginx cache","DNS cache"], a:1, w:"Đổi biến NEXT_PUBLIC_* cần chạy lại npm run build."},
+      {q:"Unit systemd dùng ExecStart=node dist/main.js không chạy dù chạy tay được. Nguyên nhân?", o:["systemd không nạp môi trường nvm; cần đường dẫn tuyệt đối tới node","Thiếu swap","Thiếu UFW","Sai múi giờ"], a:0, w:"Dùng which node để lấy đường dẫn thực tế."}
+    ], lab:[
+      {t:"Viết ecosystem.config.js cho web và api với max_memory_restart, chạy bằng pm2 start (mục 10.5).", v:"pm2 status hiển thị cả hai online."},
+      {t:"Thay PM2 bằng một unit systemd myapp-api và xem log bằng journalctl -u myapp-api -f (mục 10.7).", v:"systemctl status myapp-api active (running)."}
+    ]},
+    s11: {quiz:[
+      {q:"Container app khởi động trước db và lỗi kết nối. Cách đúng trong compose?", o:["Thêm sleep ngẫu nhiên","Dùng healthcheck cho db và depends_on condition service_healthy","Mở cổng db ra ngoài","Cài db trên host"], a:1, w:"Đảm bảo app chỉ chạy khi db sẵn sàng."}
+    ], lab:[
+      {t:"Từ máy ngoài, chạy nmap -Pn 102.245.237.2 -p 4000,5432 và xác nhận cả hai không mở sau khi bind 127.0.0.1.", v:"Hai cổng ở trạng thái closed hoặc filtered."}
+    ]},
+    s12: {quiz:[
+      {q:"App dùng user postgres trong DATABASE_URL. Vấn đề?", o:["Không vấn đề","Vi phạm nguyên tắc quyền tối thiểu; nên dùng user riêng chỉ có quyền trên đúng database","Chậm hơn","Không kết nối được"], a:1, w:"User riêng giảm thiệt hại nếu app bị khai thác."}
+    ], lab:[
+      {t:"Thiết lập SSH tunnel ssh -L 5433:127.0.0.1:5432 haidang@102.245.237.2 và kết nối psql tới localhost:5433 (mục 12.1).", v:"psql kết nối thành công mà không mở cổng 5432 ra ngoài."}
+    ]},
+    s13: {quiz:[
+      {q:"certbot báo Timeout during connect dù DNS đã đúng. Nên kiểm tra gì trước?", o:["Múi giờ","Cổng 80 trên UFW và firewall panel, và proxy cam của Cloudflare","Phiên bản Node","Dung lượng ổ đĩa"], a:1, w:"HTTP-01 cần truy cập cổng 80 trực tiếp tới VPS."},
+      {q:"Bạn bật HSTS nhưng sau đó HTTPS hỏng. Hậu quả?", o:["Không có","Trình duyệt từ chối HTTP trong thời gian dài nên người dùng không vào được","Nginx tự sửa","DNS đổi"], a:1, w:"Chỉ bật HSTS khi HTTPS đã ổn định."}
+    ], lab:[
+      {t:"Thêm security header vào server block HTTPS và kiểm tra bằng curl -I (mục 13.4).", v:"Phản hồi có X-Content-Type-Options, X-Frame-Options, Referrer-Policy."}
+    ]},
+    s14: {quiz:[
+      {q:"Health check curl cuối deploy.sh thất bại (set -e và trap rollback ERR). Điều gì xảy ra?", o:["Script tiếp tục","trap ERR chạy rollback quay về commit cũ","Máy reboot","Không gì cả"], a:1, w:"Đó là lý do health check nằm trước trap - ERR."},
+      {q:"CI deploy bị ufw limit chặn vì mở nhiều kết nối SSH. Cách xử lý?", o:["Tắt UFW","Dùng allow riêng cho IP nguồn của CI thay vì limit","Đổi cổng 80","Xóa key CI"], a:1, w:"limit chặn IP mở từ 6 kết nối trong 30 giây."}
+    ], lab:[
+      {t:"Cố tình làm npm run build lỗi, chạy deploy.sh và xác nhận script tự rollback (mục 14.1).", v:"Output có dòng Deploy lỗi, quay về commit cũ."}
+    ]},
+    s15: {quiz:[
+      {q:"Cron backup chạy nhưng file .sql.gz chỉ 0 byte hoặc tên file sai. Nghi ngờ chính?", o:["Thiếu RAM","Ký tự % chưa escape hoặc lỗi quyền; kiểm tra log cron","Sai DNS","Thiếu SSL"], a:1, w:"Chạy lệnh tay trước, rồi kiểm tra journalctl -u cron."}
+    ], lab:[
+      {t:"Đẩy backup ra ngoài VPS bằng rclone copy và xác nhận có bản sao trên remote (mục 15.3).", v:"rclone ls gdrive:vps-backup có file mới."}
+    ]},
+    s16: {quiz:[
+      {q:"nmap từ ngoài thấy 6379 (Redis) open. Khắc phục đúng?", o:["Bỏ qua","Đặt bind 127.0.0.1, requirepass và kiểm tra UFW/Docker","Đổi cổng sang 6380","Cài lại Redis"], a:1, w:"Database và cache không bao giờ mở ra Internet."}
+    ], lab:[
+      {t:"Thêm limit_req cho /api/auth/login và thử bằng vòng lặp curl để thấy 503 khi vượt ngưỡng (mục 16.2).", v:"Các request vượt ngưỡng trả 503 trong access.log."}
+    ]},
+    s17: {quiz:[
+      {q:"VPS 1 vCPU có nên dùng pm2 -i max (cluster) để tăng hiệu năng?", o:["Có, luôn luôn","Ít lợi ích vì chỉ có một lõi; ưu tiên tối ưu truy vấn và cache","Chỉ khi dùng Docker","Chỉ cho file tĩnh"], a:1, w:"Cluster giúp khi có nhiều CPU."}
+    ], lab:[
+      {t:"So sánh curl -w time_total trước và sau khi bật gzip và cache (mục 17).", v:"Ghi lại hai số liệu và thấy thời gian giảm."}
+    ]},
+    s18: {quiz:[
+      {q:"Domain trả 522 nhưng vào bằng IP được. Tầng nào nên nghi ngờ đầu tiên?", o:["Database","Đường Cloudflare tới VPS: firewall chặn IP Cloudflare hoặc VPS không phản hồi kịp","Node.js","Ổ đĩa"], a:1, w:"522 là Cloudflare không nối được tới VPS kịp thời."},
+      {q:"npm run build bị Killed. Lệnh chẩn đoán phù hợp?", o:["dmesg | grep -i kill và free -h","ufw status","dig","certbot renew"], a:0, w:"Thường do hết RAM; thêm swap hoặc build ở CI."}
+    ], lab:[
+      {t:"Giả lập sự cố: pm2 stop api, rồi dùng quy trình 7 tầng để tìm ra tầng 5 là nơi lỗi (mục 18).", v:"curl -I http://127.0.0.1:4000 lỗi; sau pm2 start api hết lỗi."}
+    ]},
+    s19: {quiz:[
+      {q:"Vì sao checklist yêu cầu thử reboot toàn bộ?", o:["Cho vui","Xác nhận mọi dịch vụ (Nginx, app, DB, firewall) tự khởi động lại đúng","Để xóa log","Để đổi IP"], a:1, w:"Sự cố sau reboot thường chỉ lộ ra khi thử thật."}
+    ], lab:[
+      {t:"Reboot VPS, chờ 60 giây rồi chạy lại toàn bộ checklist mục 19.", v:"Website, HTTPS, PM2, UFW và Fail2ban đều hoạt động."}
+    ]},
+    sC: {quiz:[
+      {q:"Nếu gõ ô Name là tutor.haiphan thì Cloudflare tạo ra tên nào?", o:["tutor.haiphan.org","tutor.haiphan.haiphan.org","haiphan.org","tutor.org"], a:1, w:"Cloudflare tự nối domain gốc vào cuối nên Name chỉ cần tutor."}
+    ], lab:[
+      {t:"Bật proxy cam, đặt Full (strict), thêm cloudflare-realip.conf và kiểm tra access.log ghi IP người dùng thật (mục 7.5, C.8).", v:"IP trong access.log không còn là dải Cloudflare."}
+    ]}
+  };
+  L.forEach(function (x) {
+    var a = ADV[x.id];
+    if (!a) return;
+    (a.quiz || []).forEach(function (it) { it.adv = true; x.quiz.push(it); });
+    (a.lab || []).forEach(function (it) { it.adv = true; x.lab.push(it); });
+  });
+  var MORE = {
+    s5: {quiz:[
+      {q:"MaxAuthTries 3 có tác dụng gì?", o:["Tối đa 3 lần thử xác thực trong một kết nối","Tối đa 3 user","Tối đa 3 key","Khóa IP sau 3 ngày"], w:"Giảm khả năng dò mật khẩu trong một kết nối."},
+      {q:"Quyền chuẩn của ~/.ssh và authorized_keys lần lượt là?", o:["700 và 600","755 và 644","777 và 777","600 và 700"], w:"Sai quyền là nguyên nhân phổ biến khiến SSH key không được chấp nhận."}
+    ], lab:[
+      {t:"Liệt kê user có shell đăng nhập: getent passwd | grep -v nologin.", v:"Thấy root và haidang."},
+      {t:"Xem các lần đăng nhập gần đây bằng last -n 20 (mục 15.1).", v:"Thấy phiên deploy bạn vừa tạo."},
+      {t:"Kiểm tra quyền: stat -c '%a %U' ~/.ssh ~/.ssh/authorized_keys.", v:"700 haidang và 600 haidang."},
+      {t:"Đặt MaxAuthTries 3 và LoginGraceTime 30, kiểm tra bằng sudo sshd -T | grep -Ei 'maxauthtries|logingracetime'.", v:"Hiển thị đúng hai giá trị."},
+      {t:"Đếm số key trong authorized_keys bằng wc -l và đối chiếu với danh sách người được phép.", v:"Mỗi dòng đều là key của bạn."},
+      {t:"Xem file ghi đè: ls /etc/ssh/sshd_config.d/ và đọc từng file.", v:"Biết file nào đang ghi đè cấu hình (nếu có)."}
+    ]},
+    s6: {quiz:[
+      {q:"ufw limit chặn tạm một IP khi nào?", o:["Từ 6 kết nối trở lên tới cổng đó trong 30 giây","Sau 1 lần sai","Sau 100 gói","Không bao giờ"], w:"Giới hạn tốc độ giúp chống dò mật khẩu SSH."}
+    ], lab:[
+      {t:"Chạy sudo ufw app list và sudo ufw app info OpenSSH (mục 6.2).", v:"Thấy Ports: 22/tcp."},
+      {t:"Chạy sudo ufw show added để lưu lại các rule dạng lệnh.", v:"Có ufw limit OpenSSH, allow 80/tcp, allow 443/tcp."},
+      {t:"Sao lưu cấu hình: sudo cp -a /etc/ufw /etc/ufw.bak-$(date +%F) (mục 6.4).", v:"Thư mục /etc/ufw.bak-... tồn tại."},
+      {t:"Thống kê 10 IP bị chặn nhiều nhất từ /var/log/ufw.log (mục 6.5).", v:"Ra danh sách IP kèm số lần."},
+      {t:"Thống kê cổng bị dò nhiều nhất bằng DPT= (mục 6.5).", v:"Thấy các cổng như 3306, 5432, 23."},
+      {t:"Chạy sudo fail2ban-regex systemd-journal /etc/fail2ban/filter.d/sshd.conf (mục 6.9).", v:"Số dòng khớp lớn hơn 0 nếu có kẻ dò."}
+    ]},
+    s7: {quiz:[
+      {q:"TTL nên đặt thế nào trong lúc setup DNS?", o:["Thấp (khoảng 300 giây) để sửa sai nhanh","Cao nhất có thể","Không đặt","Bằng 0 vĩnh viễn"], w:"Sau khi ổn định có thể tăng lên 3600 hoặc để Auto."},
+      {q:"Ký hiệu @ trong bản ghi DNS nghĩa là gì?", o:["Tên miền gốc","Subdomain www","IPv6","Địa chỉ email"], w:"Ví dụ @ của haiphan.org là chính haiphan.org."}
+    ], lab:[
+      {t:"Xóa hoặc sửa bản ghi cũ do trang đỗ tên miền tạo (mục 7.4).", v:"Chỉ còn bản ghi trỏ về VPS."},
+      {t:"Chạy nslookup tutor.haiphan.org.", v:"Trả về 102.245.237.2."},
+      {t:"Tra mức lan truyền trên dnschecker.org.", v:"Nhiều vùng ra IP đúng."},
+      {t:"Tạo bản ghi A api trỏ 102.245.237.2 (tùy chọn).", v:"dig +short api.haiphan.org trả đúng IP."},
+      {t:"Đặt TTL 300 hoặc Auto cho bản ghi tutor.", v:"Cột TTL trên Cloudflare hiển thị đúng."},
+      {t:"Bật proxy cam rồi dig để thấy IP Cloudflare (mục 7.3).", v:"IP bắt đầu bằng 104. hoặc 172.67."},
+      {t:"Đặt SSL/TLS Full (strict) và bật Always Use HTTPS (mục 7.4).", v:"curl -I http://tutor.haiphan.org trả 301."},
+      {t:"Tạo cloudflare-realip.conf bằng script ở mục 7.5 rồi chạy nginx -t.", v:"File tồn tại và nginx -t báo ok."}
+    ]},
+    s8: {quiz:[
+      {q:"File cấu hình bổ sung được nạp tự động (*.conf) nằm ở đâu?", o:["/etc/nginx/conf.d/","/var/www/","/root/","/usr/bin/"], w:"Ví dụ conf.d/cloudflare-realip.conf."},
+      {q:"Lệnh nào xem toàn bộ cấu hình Nginx đang được nạp?", o:["sudo nginx -T","nginx --help","systemctl nginx","ls /etc"], w:"Dùng kèm less hoặc grep để tìm server_name."}
+    ], lab:[
+      {t:"Chạy systemctl status nginx --no-pager.", v:"active (running)."},
+      {t:"Chạy sudo ss -tulpn | grep :80.", v:"Nginx lắng nghe cổng 80."},
+      {t:"Xem cấu trúc: ls -l /etc/nginx/sites-available /etc/nginx/sites-enabled.", v:"sites-enabled chứa symlink."},
+      {t:"Chạy sudo nginx -T | less và tìm server_name tutor.haiphan.org.", v:"Thấy server block của bạn."},
+      {t:"Mở tail -f access.log rồi curl vào domain từ máy khác.", v:"Có dòng log mới."},
+      {t:"Xem sudo tail -n 50 /var/log/nginx/error.log.", v:"Không có lỗi nghiêm trọng."},
+      {t:"Gỡ site mặc định: sudo rm -f /etc/nginx/sites-enabled/default rồi reload.", v:"Không còn trang Welcome to nginx."},
+      {t:"Xem journalctl -u nginx -n 50 --no-pager.", v:"Có dòng khởi động/reload gần nhất."}
+    ]},
+    s9: {quiz:[
+      {q:"Lệnh nào nhanh nhất để kiểm tra site tĩnh trả 200?", o:["curl -I http://tutor.haiphan.org","pm2 status","ufw show added","dig MX"], w:"Phải thấy HTTP/1.1 200 OK."},
+      {q:"Vì sao đặt access_log off cho file tĩnh?", o:["Giảm ghi log không cần thiết","Tăng bảo mật SSH","Cấp SSL","Đổi DNS"], w:"File js/css/ảnh sinh rất nhiều dòng log ít giá trị."}
+    ], lab:[
+      {t:"Đặt chủ thư mục: sudo chown -R haidang:haidang /var/www/tutor.haiphan.org.", v:"ls -ld cho thấy chủ haidang."},
+      {t:"Build ở máy cá nhân: npm run build ra thư mục dist.", v:"Có dist/index.html."},
+      {t:"Chạy rsync -avzn (dry run) trước khi đẩy thật.", v:"In danh sách file sẽ chép mà chưa thay đổi gì."},
+      {t:"Chạy rsync -avz --delete ./dist/ haidang@102.245.237.2:/var/www/tutor.haiphan.org/.", v:"Thư mục trên VPS khớp với dist."},
+      {t:"Kiểm tra gzip: curl -H 'Accept-Encoding: gzip' -I tới file css.", v:"Có Content-Encoding: gzip."},
+      {t:"Kiểm tra quyền thư mục 755 và file 644 bằng namei -l hoặc stat.", v:"Nginx đọc được file, không có 403."},
+      {t:"Vào thẳng đường dẫn con /about (F5).", v:"Trả 200 nhờ try_files, không 404."},
+      {t:"Xóa một file trong dist, rsync --delete lại và kiểm tra trên VPS.", v:"File đó biến mất khỏi VPS."}
+    ]},
+    s10: {quiz:[
+      {q:"pm2 reload khác pm2 restart thế nào?", o:["reload restart mềm, giảm gián đoạn","reload xóa app","Giống hệt nhau","reload chỉ đọc log"], w:"Với chế độ cluster gần như không gián đoạn."}
+    ], lab:[
+      {t:"Xem log: pm2 logs web --lines 50.", v:"Thấy log khởi động Next.js."},
+      {t:"Mở pm2 monit để xem CPU/RAM thời gian thực.", v:"Thấy web và api cùng thông số."},
+      {t:"Tạo .env từ .env.example và chmod 600 .env.", v:"stat -c '%a' .env cho 600."},
+      {t:"Sinh secret ngẫu nhiên bằng openssl rand -base64 48 và điền JWT_SECRET.", v:"Chuỗi dài, khác với môi trường dev."},
+      {t:"Cài pm2-logrotate và đặt max_size 10M, retain 7 (mục 15.2).", v:"pm2 conf hiển thị các giá trị."},
+      {t:"Reboot VPS rồi chạy pm2 status.", v:"web và api tự lên online."}
+    ]},
+    s11: {quiz:[
+      {q:"Lệnh nào xem log của service app trong compose?", o:["docker compose logs -f app","docker ps -a -f","docker images","docker login"], w:"Thêm --tail 100 để giới hạn dòng."},
+      {q:"USER node trong Dockerfile để làm gì?", o:["Chạy app bằng user thường, không phải root","Đổi tên image","Mở cổng","Cài Node"], w:"Áp dụng nguyên tắc quyền tối thiểu."},
+      {q:"Multi-stage build có lợi gì?", o:["Image cuối nhỏ hơn vì không chứa công cụ build","Chạy nhanh hơn trên mọi máy","Tự cấp SSL","Thay Nginx"], w:"Stage build chỉ để biên dịch; stage cuối chỉ chứa phần chạy."}
+    ], lab:[
+      {t:"Thêm haidang vào nhóm docker, đăng xuất rồi đăng nhập lại.", v:"docker ps chạy được không cần sudo."},
+      {t:"Chạy docker --version và docker compose version.", v:"Có phiên bản của cả hai."},
+      {t:"Viết Dockerfile multi-stage (mục 11.2) và docker build -t myapp .", v:"docker images có myapp."},
+      {t:"Chạy docker compose up -d --build.", v:"docker compose ps hiển thị app và db."},
+      {t:"Xem log: docker compose logs -f app.", v:"App khởi động không lỗi kết nối DB."},
+      {t:"Chạy docker compose exec db pg_isready -U appuser -d appdb.", v:"accepting connections."},
+      {t:"Kiểm tra ss -tulpn | grep 4000.", v:"Chỉ thấy 127.0.0.1:4000."},
+      {t:"Dọn tài nguyên bằng docker system prune -f (mục 15.5).", v:"df -h cho thấy dung lượng được giải phóng."}
+    ]},
+    s12: {quiz:[
+      {q:"Chuỗi kết nối cho app chạy cùng VPS nên dùng host nào?", o:["127.0.0.1","0.0.0.0","Tên miền công khai","8.8.8.8"], w:"Database chỉ lắng nghe localhost."},
+      {q:"mysql_secure_installation làm gì?", o:["Đặt mật khẩu root, xóa user ẩn danh, tắt root từ xa","Cài Nginx","Cấp SSL","Đổi cổng SSH"], w:"Bước bảo mật đầu tiên cho MariaDB/MySQL."},
+      {q:"Redis nên được cấu hình ra sao?", o:["bind 127.0.0.1 và đặt requirepass","Mở 6379 ra ngoài","Tắt mật khẩu","Chạy bằng root"], w:"Redis không có mật khẩu và mở ra ngoài rất nguy hiểm."}
+    ], lab:[
+      {t:"Chạy sudo -u postgres psql -c 'select version();'.", v:"In phiên bản PostgreSQL."},
+      {t:"Kiểm tra systemctl status postgresql.", v:"active."},
+      {t:"Tạo user appuser với mật khẩu mạnh (mục 12.1).", v:"\\du có appuser."},
+      {t:"Tạo database appdb owner appuser, ENCODING UTF8.", v:"\\l có appdb."},
+      {t:"Kết nối thử: psql postgresql://appuser:MAT_KHAU@127.0.0.1:5432/appdb -c 'select 1'.", v:"Trả về 1."},
+      {t:"Cài redis-server, đặt requirepass và chạy redis-cli -a MAT_KHAU ping (mục 12.3).", v:"PONG."},
+      {t:"Kiểm tra ss -tulpn | grep 6379.", v:"Chỉ 127.0.0.1:6379."},
+      {t:"Nếu dùng MariaDB: tạo CSDL utf8mb4 và user appuser@localhost (mục 12.2).", v:"SHOW DATABASES có appdb."}
+    ]},
+    s13: {quiz:[
+      {q:"Certbot --nginx tự sửa gì trong Nginx?", o:["Thêm khối listen 443 ssl và đường dẫn chứng chỉ","Xóa site","Đổi DNS","Cài PM2"], w:"Nó cũng có thể thêm chuyển hướng HTTP sang HTTPS."},
+      {q:"Dùng --dry-run hoặc --staging khi nào?", o:["Khi thử cấp để tránh rate limit","Khi xóa chứng chỉ","Khi bật HSTS","Khi đổi cổng"], w:"Let's Encrypt giới hạn số lần cấp thật trong một tuần."}
+    ], lab:[
+      {t:"Cài certbot và python3-certbot-nginx.", v:"certbot --version in phiên bản."},
+      {t:"Chọn chuyển hướng HTTP sang HTTPS khi certbot hỏi.", v:"curl -I http://tutor.haiphan.org trả 301."},
+      {t:"Chạy sudo certbot certificates.", v:"Thấy ngày hết hạn."},
+      {t:"Chạy systemctl list-timers | grep certbot.", v:"Có timer gia hạn."},
+      {t:"Chuyển hướng haiphan.org về tutor.haiphan.org (mục 13.3).", v:"curl -I https://haiphan.org trả 301 tới tutor."},
+      {t:"Thêm server_tokens off; trong nginx.conf (mục 13.4).", v:"curl -I không lộ phiên bản Nginx."},
+      {t:"Kiểm tra TLS: openssl s_client -connect tutor.haiphan.org:443 -servername tutor.haiphan.org.", v:"Verification: OK."},
+      {t:"Kiểm tra HTTP/2: curl -I --http2 https://tutor.haiphan.org.", v:"HTTP/2 200."}
+    ]},
+    s14: {quiz:[
+      {q:"Vì sao deploy dùng npm ci thay vì npm install?", o:["Cài đúng phiên bản trong package-lock.json","Luôn nhanh hơn","Không cần mạng","Xóa dependency"], w:"Bảo đảm bản build lặp lại được."},
+      {q:"set -euo pipefail trong script làm gì?", o:["Dừng khi lỗi, biến chưa khai báo hoặc lỗi trong pipe","In màu","Đổi cổng","Mở UFW"], w:"Giúp script không chạy tiếp sau khi một bước hỏng."}
+    ], lab:[
+      {t:"Tạo deploy key riêng cho repo private (mục 10.3).", v:"ssh -T git@github.com chào đúng repo."},
+      {t:"git clone vào /var/www/myapp.", v:"git log -1 hiển thị commit mới nhất."},
+      {t:"Thêm VPS_HOST, VPS_USER, VPS_SSH_KEY vào GitHub Secrets (mục 14.2).", v:"Có đủ 3 secret."},
+      {t:"Tạo ci_key và thêm ci_key.pub vào authorized_keys của haidang.", v:"ssh -i ci_key haidang@102.245.237.2 vào được."},
+      {t:"Viết .github/workflows/deploy.yml.", v:"Workflow hiện trong tab Actions."},
+      {t:"Push lên main và xem workflow chạy.", v:"Job deploy xanh."},
+      {t:"Xóa ci_key khỏi máy sau khi lưu vào Secrets.", v:"Không còn file ci_key local."},
+      {t:"Sau deploy kiểm tra pm2 status và curl -I https://tutor.haiphan.org.", v:"online và 200."}
+    ]},
+    s15: {quiz:[
+      {q:"Vì sao phải đẩy backup ra ngoài VPS?", o:["Phòng khi cả VPS hỏng hoặc mất","Cho nhanh","Giảm RAM","Để bật SSL"], w:"Đó là chữ 1 trong 3-2-1."},
+      {q:"journalctl --vacuum-size=200M làm gì?", o:["Giới hạn dung lượng journal","Xóa Nginx","Đổi múi giờ","Tăng RAM"], w:"Tránh log hệ thống làm đầy ổ đĩa."},
+      {q:"Ngưỡng ổ đĩa cần chú ý theo tài liệu là?", o:["Trên 80%","Trên 5%","Dưới 10%","Không cần"], w:"Cùng RAM gần hết và load average vượt số CPU kéo dài."}
+    ], lab:[
+      {t:"Xem log Nginx: tail access.log và error.log (mục 15.1).", v:"Thấy dòng truy cập mới."},
+      {t:"Xem log PM2: pm2 logs --lines 100.", v:"Có log của web và api."},
+      {t:"Cài pm2-logrotate và đặt max_size 10M, retain 7.", v:"pm2 conf liệt kê giá trị."},
+      {t:"Chạy sudo journalctl --vacuum-time=14d.", v:"In số dung lượng đã giải phóng."},
+      {t:"Chạy tay lệnh pg_dump | gzip vào /home/haidang/backup.", v:"File .sql.gz lớn hơn 0 byte."},
+      {t:"Nén uploads bằng tar czf rồi kiểm tra bằng tar tzf.", v:"Liệt kê đúng nội dung."},
+      {t:"Chạy find -mtime +14 với -print trước khi dùng -delete.", v:"Chỉ liệt kê file cũ hơn 14 ngày."},
+      {t:"Tạo endpoint /health và đăng ký UptimeRobot (mục 15.4).", v:"Monitor báo Up."}
+    ]},
+    s16: {quiz:[
+      {q:"Lynis dùng để làm gì?", o:["Chấm điểm hardening và gợi ý cải thiện","Cấp SSL","Deploy","Backup"], w:"Ưu tiên các mục mức Warning."},
+      {q:"Key CI nên được giới hạn như thế nào?", o:["Chỉ cho chạy lệnh deploy qua command=... trong authorized_keys","Cho toàn quyền root","Dùng chung với key cá nhân","Không giới hạn"], w:"Nguyên tắc quyền tối thiểu."},
+      {q:"Secret production nên tồn tại ở đâu?", o:["Chỉ trên VPS hoặc trong hệ thống secret của CI","Commit lên Git","Gửi qua chat","Trong README"], w:"Mỗi môi trường dùng secret khác nhau."}
+    ], lab:[
+      {t:"Chạy sudo ss -tulpn để rà soát cổng đang lắng nghe (mục 16.1).", v:"Chỉ 22, 80, 443 ở 0.0.0.0."},
+      {t:"Bật GitHub secret scanning hoặc cài git-secrets (mục 16.4).", v:"Có cảnh báo khi commit secret mẫu."},
+      {t:"Kiểm tra .env không nằm trong Git: git ls-files | grep .env.", v:"Không có kết quả."},
+      {t:"Chạy git check-ignore .env.", v:"In ra .env."},
+      {t:"Khai báo limit_req_zone login trong conf.d/ratelimit.conf rồi nginx -t.", v:"nginx -t báo ok."},
+      {t:"Rà soát authorized_keys và gỡ key không còn dùng.", v:"Chỉ còn key đang dùng."},
+      {t:"Chạy sudo lynis audit system và ghi lại các mục Warning.", v:"Có danh sách Warning cần xử lý."},
+      {t:"Xoay thử một secret (JWT_SECRET) bằng openssl rand -base64 48 rồi pm2 reload --update-env.", v:"App chạy với secret mới."}
+    ]},
+    s18: {quiz:[
+      {q:"Lỗi 413 Request Entity Too Large sửa bằng cách nào?", o:["Tăng client_max_body_size rồi reload","Tăng swap","Đổi DNS","Cấp lại SSL"], w:"Mặc định chỉ 1 MB."},
+      {q:"Lỗi 403 Forbidden với site tĩnh thường do đâu?", o:["Sai quyền thư mục hoặc thiếu index","DNS","PM2","Redis"], w:"Kiểm tra chmod 755, chown và các chỉ thị root, index."}
+    ], lab:[
+      {t:"Tầng 1: dig +short tutor.haiphan.org.", v:"Trả 102.245.237.2 (nếu đang để xám)."},
+      {t:"Tầng 2: ping 102.245.237.2 và nc -zv 102.245.237.2 443.", v:"Kết nối cổng 443 thành công."},
+      {t:"Tầng 3: sudo ufw status.", v:"Có 80 và 443 ALLOW."},
+      {t:"Tầng 4: systemctl status nginx và sudo nginx -t.", v:"active và syntax is ok."},
+      {t:"Tầng 5: curl -I http://127.0.0.1:3000 và pm2 status.", v:"200 và online."},
+      {t:"Tầng 6: systemctl status postgresql và thử psql.", v:"active và vào được psql."},
+      {t:"Tầng 7: df -h, free -h và dmesg | grep -i kill.", v:"Ổ đĩa dưới 80%, không có dòng kill."},
+      {t:"Giả lập 413: upload file hơn 20 MB, sau đó tăng client_max_body_size và thử lại.", v:"Lần đầu 413, sau khi sửa thì thành công."}
+    ]},
+    sC: {quiz:[
+      {q:"Proxy status ở bước C.2 nên đặt thế nào?", o:["DNS only (xám) trong lúc setup","Proxied (cam)","Off","Không quan trọng"], w:"Bật cam sau khi cấp SSL."},
+      {q:"Khi nào nên bật proxy cam?", o:["Sau khi cấp SSL xong và đặt chế độ Full (strict)","Trước khi cấp SSL","Không bao giờ","Khi VPS tắt"], w:"Làm bước đặt Full (strict) ngay sau đó để tránh lỗi chuyển hướng."},
+      {q:"Nếu certbot báo lỗi ở bước C.7 thì nên làm gì?", o:["Làm đúng C.3, mở cổng 80, chuyển bản ghi sang xám","Cài lại VPS","Xóa Nginx","Đổi domain"], w:"Đó là ba nguyên nhân thường gặp nhất."}
+    ], lab:[
+      {t:"C.1: Ghi lại bảng thông số (subdomain, IP 102.245.237.2, user haidang, cổng app).", v:"Có đủ các thông số."},
+      {t:"C.4: Chạy ssh-keygen -R 102.245.237.2 nếu bị cảnh báo, rồi ssh haidang@102.245.237.2.", v:"Vào được VPS bằng key."},
+      {t:"C.4: Mở 80/443 ở cả UFW và firewall panel nhà cung cấp.", v:"Từ ngoài nc -zv 102.245.237.2 80 thành công."},
+      {t:"C.5: Chạy nginx -t, reload rồi curl -I http://tutor.haiphan.org.", v:"200 hoặc 502 (bình thường nếu app chưa chạy)."},
+      {t:"C.6: pm2 save rồi curl -I http://127.0.0.1:3000.", v:"Trả 200."},
+      {t:"C.7: Chạy sudo certbot renew --dry-run.", v:"Thành công."},
+      {t:"C.9: Chạy checklist cuối: dig, curl HTTPS, pm2 status, certbot dry-run.", v:"Cả bốn đều đạt."}
+    ]}
+  };
+  var moreCount = 0;
+  L.forEach(function (x) {
+    var a = MORE[x.id];
+    if (!a) return;
+    (a.quiz || []).forEach(function (it) {
+      var k = (moreCount++ % 3) + 1;
+      var o = it.o.slice(k).concat(it.o.slice(0, k));
+      x.quiz.push({q: it.q, o: o, a: (4 - k) % 4, w: it.w});
+    });
+    (a.lab || []).forEach(function (it) { x.lab.push(it); });
+  });
+  var KEY = 'vps-guide-v4';
+  var ST = {q:{}, l:{}};
+  try { var raw = JSON.parse(localStorage.getItem(KEY) || 'null'); if (raw) ST = raw; } catch (e) {}
+  if (!ST.q) ST.q = {}; if (!ST.l) ST.l = {};
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(ST)); } catch (e) {} }
+
+  var GROUPS = [];
+  L.forEach(function (x) { if (GROUPS.indexOf(x.g) < 0) GROUPS.push(x.g); });
+  var NUM = {};
+  L.forEach(function (x, i) { NUM[x.id] = i; x.n = i; });
+  var cur = null;
+
+  function quizDone(x) { var m = ST.q[x.id] || {}; return x.quiz.filter(function (_, i) { return m[i] !== undefined; }).length; }
+  function quizRight(x) { var m = ST.q[x.id] || {}; return x.quiz.filter(function (it, i) { return m[i] === it.a; }).length; }
+  function labDone(x) { var m = ST.l[x.id] || {}; return x.lab.filter(function (_, i) { return !!m[i]; }).length; }
+
+  // Build theory/quiz/lab panels per lesson
+  L.forEach(function (x) {
+    var sec = document.getElementById(x.id);
+    x.el = sec;
+    if (!sec) return;
+    sec.classList.add('lesson');
+    var h2 = sec.querySelector('h2');
+    var kick = document.createElement('div');
+    kick.className = 'kicker';
+    kick.textContent = 'Bài ' + (x.n + 1) + ' · ' + x.g;
+    sec.insertBefore(kick, h2);
+    var theory = document.createElement('div');
+    theory.className = 'panel theory';
+    while (h2.nextSibling) theory.appendChild(h2.nextSibling);
+    sec.appendChild(theory);
+
+    var hasExtra = x.quiz.length > 0 || x.lab.length > 0;
+    if (hasExtra) {
+      var bar = document.createElement('div');
+      bar.className = 'tabs';
+      var tabs = [['theory', 'Lý thuyết', null]];
+      if (x.quiz.length) tabs.push(['quiz', 'Quiz', x.quiz.length]);
+      if (x.lab.length) tabs.push(['lab', 'Thực hành', x.lab.length]);
+      tabs.forEach(function (t) {
+        var b = document.createElement('button');
+        b.dataset.tab = t[0];
+        b.textContent = t[1];
+        bar.appendChild(b);
+      });
+      h2.parentNode.insertBefore(bar, theory);
+      x.bar = bar;
+
+      if (x.quiz.length) {
+        var qp = document.createElement('div');
+        qp.className = 'panel quiz';
+        x.quiz.forEach(function (it, i) {
+          var card = document.createElement('div');
+          card.className = 'qz' + (it.adv ? ' adv' : '');
+          card.innerHTML = '<div class="qn">Câu ' + (i + 1) + ' / ' + x.quiz.length + (it.adv ? ' · NÂNG CAO' : '') + '</div><h4></h4><div class="opts"></div><div class="why"></div>';
+          card.querySelector('h4').textContent = it.q;
+          var opts = card.querySelector('.opts'), why = card.querySelector('.why');
+          it.o.forEach(function (text, j) {
+            var b = document.createElement('button');
+            b.textContent = String.fromCharCode(65 + j) + '. ' + text;
+            b.addEventListener('click', function () { answer(x, i, j); });
+            opts.appendChild(b);
+          });
+          card.dataset.i = i;
+          qp.appendChild(card);
+        });
+        var sc = document.createElement('div');
+        sc.className = 'score';
+        qp.appendChild(sc);
+        sec.appendChild(qp);
+        x.qp = qp;
+      }
+      if (x.lab.length) {
+        var lp = document.createElement('div');
+        lp.className = 'panel lab';
+        var prog = document.createElement('div');
+        prog.className = 'prog';
+        lp.appendChild(prog);
+        x.lab.forEach(function (it, i) {
+          var row = document.createElement('label');
+          row.className = 'labrow' + (it.adv ? ' adv' : '');
+          var cb = document.createElement('input');
+          cb.type = 'checkbox';
+          cb.addEventListener('change', function () {
+            ST.l[x.id] = ST.l[x.id] || {};
+            ST.l[x.id][i] = cb.checked; save(); row.classList.toggle('done', cb.checked); refresh(x);
+          });
+          var body = document.createElement('div');
+          var t = document.createElement('div');
+          t.textContent = (i + 1) + '. ' + (it.adv ? '[Nâng cao] ' : '') + it.t;
+          var v = document.createElement('div');
+          v.className = 'v';
+          v.textContent = 'Kiểm tra: ' + it.v;
+          body.appendChild(t); body.appendChild(v);
+          row.appendChild(cb); row.appendChild(body);
+          row.dataset.i = i;
+          lp.appendChild(row);
+        });
+        var rst = document.createElement('button');
+        rst.className = 'rst';
+        rst.textContent = 'Bỏ tích bài này';
+        rst.addEventListener('click', function () { ST.l[x.id] = {}; save(); refresh(x); });
+        lp.appendChild(rst);
+        sec.appendChild(lp);
+        x.lp = lp;
+      }
+      bar.addEventListener('click', function (e) {
+        var t = e.target.closest('button[data-tab]');
+        if (!t) return;
+        showTab(x, t.dataset.tab);
+      });
+    }
+
+    var nav = document.createElement('div');
+    nav.className = 'pager';
+    var prev = document.createElement('a'), next = document.createElement('a');
+    prev.className = 'pg-btn'; next.className = 'pg-btn';
+    prev.dataset.dir = '-1'; next.dataset.dir = '1';
+    nav.appendChild(prev); nav.appendChild(next);
+    sec.appendChild(nav);
+    x.prev = prev; x.next = next;
+  });
+
+  function answer(x, i, j) {
+    var m = ST.q[x.id] = ST.q[x.id] || {};
+    if (m[i] !== undefined) return;
+    m[i] = j; save();
+    refresh(x);
+  }
+
+  function refresh(x) {
+    if (x.qp) {
+      var m = ST.q[x.id] || {};
+      x.qp.querySelectorAll('.qz').forEach(function (card) {
+        var i = +card.dataset.i, it = x.quiz[i], opts = card.querySelector('.opts');
+        var buttons = opts.querySelectorAll('button'), why = card.querySelector('.why');
+        buttons.forEach(function (b) { b.classList.remove('right', 'wrong'); b.disabled = m[i] !== undefined; });
+        if (m[i] !== undefined) {
+          buttons[m[i]].classList.add(m[i] === it.a ? 'right' : 'wrong');
+          if (m[i] !== it.a) buttons[it.a].classList.add('right');
+          why.textContent = (m[i] === it.a ? 'Đúng. ' : 'Chưa đúng. ') + it.w;
+          why.classList.add('show');
+        } else { why.classList.remove('show'); why.textContent = ''; }
+      });
+      var sc = x.qp.querySelector('.score');
+      var done = quizDone(x);
+      if (done === x.quiz.length) { sc.textContent = 'Kết quả: ' + quizRight(x) + ' / ' + x.quiz.length + ' câu đúng'; sc.classList.add('show'); }
+      else { sc.textContent = ''; sc.classList.remove('show'); }
+    }
+    if (x.lp) {
+      var lm = ST.l[x.id] || {};
+      x.lp.querySelectorAll('.labrow').forEach(function (row) {
+        var i = +row.dataset.i, on = !!lm[i];
+        row.classList.toggle('done', on);
+        row.querySelector('input').checked = on;
+      });
+      x.lp.querySelector('.prog').textContent = 'Đã xong ' + labDone(x) + ' / ' + x.lab.length + ' bài';
+    }
+    if (x.bar) {
+      var tb = x.bar.querySelectorAll('button[data-tab]');
+      tb.forEach(function (b) {
+        var t = b.dataset.tab, label = b.textContent.replace(/ \(.*\)$/, '');
+        if (t === 'quiz') { label += ' (' + quizDone(x) + '/' + x.quiz.length + ')'; }
+        if (t === 'lab') { label += ' (' + labDone(x) + '/' + x.lab.length + ')'; }
+        b.textContent = label;
+      });
+    }
+    buildNav();
+  }
+
+  function showTab(x, tab) {
+    if (!x.el) return;
+    x.el.querySelectorAll('.panel').forEach(function (p) { p.style.display = 'none'; });
+    var target = x.el.querySelector('.panel.' + tab);
+    if (target) target.style.display = '';
+    if (x.bar) x.bar.querySelectorAll('button[data-tab]').forEach(function (b) { b.classList.toggle('on', b.dataset.tab === tab); });
+  }
+
+  function show(id) {
+    var idx = NUM[id] !== undefined ? NUM[id] : 0;
+    cur = L[idx];
+    L.forEach(function (x) { if (x.el) x.el.style.display = (x === cur) ? '' : 'none'; });
+    if (cur.el) {
+      showTab(cur, 'theory');
+      refresh(cur);
+      var p = cur.prev, n = cur.next;
+      var pi = idx - 1, ni = idx + 1;
+      p.style.visibility = pi >= 0 ? '' : 'hidden';
+      n.style.visibility = ni < L.length ? '' : 'hidden';
+      if (pi >= 0) { p.textContent = '← ' + L[pi].s; p.href = '#' + L[pi].id; }
+      if (ni < L.length) { n.textContent = L[ni].s + ' →'; n.href = '#' + L[ni].id; }
+    }
+    buildNav();
+    window.scrollTo(0, 0);
+  }
+
+  function totals() {
+    var q = 0, qt = 0, l = 0, lt = 0;
+    L.forEach(function (x) { q += quizRight(x); qt += x.quiz.length; l += labDone(x); lt += x.lab.length; });
+    return {q: q, qt: qt, l: l, lt: lt};
+  }
+
+  function buildNav() {
+    var box = document.getElementById('navList');
+    if (!box) return;
+    box.innerHTML = '';
+    GROUPS.forEach(function (g) {
+      var h = document.createElement('div');
+      h.className = 'grp';
+      h.textContent = g;
+      box.appendChild(h);
+      L.forEach(function (x) {
+        if (x.g !== g) return;
+        var a = document.createElement('a');
+        a.href = '#' + x.id;
+        a.className = (cur && cur.id === x.id) ? 'on' : '';
+        var qd = x.quiz.length ? quizDone(x) + '/' + x.quiz.length : '';
+        var ld = x.lab.length ? labDone(x) + '/' + x.lab.length : '';
+        var full = (!x.quiz.length || quizDone(x) === x.quiz.length) && (!x.lab.length || labDone(x) === x.lab.length) && (x.quiz.length || x.lab.length);
+        a.innerHTML = '<span class="no"></span><span class="nm"></span><span class="pg"></span>';
+        a.querySelector('.no').textContent = (x.n + 1);
+        a.querySelector('.nm').textContent = x.s;
+        a.querySelector('.pg').textContent = full ? '✓' : [qd, ld].filter(Boolean).join(' · ');
+        if (full) a.querySelector('.pg').classList.add('full');
+        box.appendChild(a);
+      });
+    });
+    var t = totals();
+    var foot = document.createElement('div');
+    foot.className = 'tot';
+    foot.textContent = 'Quiz đúng: ' + t.q + ' / ' + t.qt + ' · Thực hành: ' + t.l + ' / ' + t.lt;
+    box.appendChild(foot);
+  }
+
+  window.addEventListener('hashchange', function () { show(location.hash.replace('#', '') || 's0'); });
+  show(location.hash.replace('#', '') || 's0');
+})();
+</script>
+</body>
+</html>
