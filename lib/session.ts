@@ -28,7 +28,7 @@ export async function verifyToken(token: string | undefined) {
   if (i < 0) return false;
   const payload = token.slice(0, i);
   const sig = token.slice(i + 1);
-  const exp = Number(payload.split(".")[1]);
+  const exp = Number(payload.slice(payload.lastIndexOf(".") + 1));
   if (!exp || exp < Date.now()) return false;
   const expected = await hmac(payload);
   if (sig.length !== expected.length) return false;
