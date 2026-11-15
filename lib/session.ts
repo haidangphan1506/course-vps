@@ -18,21 +18,28 @@ async function hmac(data: string) {
 }
 
 export async function createToken(user: string) {
-  const payload = `${encodeURIComponent(user)}.${Date.now() + MAX_AGE * 1000}`;
+  const payload = `${user}.${Date.now() + MAX_AGE * 1000}`;
   return `${payload}.${await hmac(payload)}`;
 }
 
-export async function verifyToken(token: string | undefined) {
-  if (!token) return false;
+/** Trả về email trong token nếu token hợp lệ và chưa hết hạn, ngược lại trả về null. */
+export async function getSessionUser(token: string | undefined): Promise<string | null> {
+  if (!token) return null;
   const i = token.lastIndexOf(".");
-  if (i < 0) return false;
+  if (i < 0) return null;
   const payload = token.slice(0, i);
   const sig = token.slice(i + 1);
-  const exp = Number(payload.split(".")[1]);
-  if (!exp || exp < Date.now()) return false;
+  const dot = payload.lastIndexOf(".");
+  const exp = Number(payload.slice(dot + 1));
+  if (!exp || exp < Date.now()) return null;
   const expected = await hmac(payload);
-  if (sig.length !== expected.length) return false;
+  if (sig.length !== expected.length) return null;
   let diff = 0;
   for (let k = 0; k < sig.length; k++) diff |= sig.charCodeAt(k) ^ expected.charCodeAt(k);
-  return diff === 0;
+  if (diff !== 0) return null;
+  return payload.slice(0, dot);
+}
+
+export async function verifyToken(token: string | undefined) {
+  return (await getSessionUser(token)) !== null;
 }

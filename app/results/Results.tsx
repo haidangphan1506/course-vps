@@ -1,77 +1,85 @@
-import raw from "./progress.json";
+"use client";
 
-type Progress = {
-  labs: Record<string, boolean[]>;
-  hist: { l: string; s: number; n: number; t: number }[];
-  flag: Record<string, Record<string, boolean>>;
-};
-const D = raw as unknown as Progress;
-
-const ORDER: [string, string, string][] = [
-  ["c1", "Linux và SSH", "Nền tảng"],
-  ["lb1", "Hệ thống file", "Linux căn bản"],
-  ["lb1-2", "Hệ thống file (phần 2)", "Linux căn bản"],
-  ["lb2", "Quyền và sở hữu", "Linux căn bản"],
-  ["lb2-2", "Quyền và sở hữu (phần 2)", "Linux căn bản"],
-  ["lb3", "Shell hằng ngày", "Linux căn bản"],
-  ["lb3-2", "Shell hằng ngày (phần 2)", "Linux căn bản"],
-  ["lb4", "Chuyển hướng và pipe", "Linux căn bản"],
-  ["c5a", "Docker cơ bản", "Ứng dụng"],
-  ["c2a", "Bảo mật: cổng và tường lửa", "Nền tảng"],
-];
+import { useEffect, useState } from "react";
+import Card from "@/components/ui/Card";
+import Pill from "@/components/ui/Pill";
+import ProgressBar from "@/components/ui/ProgressBar";
+import StatCard from "@/components/ui/StatCard";
+import { loadEngine } from "@/lib/course/engine";
+import type { Lesson } from "@/lib/course/types";
+import type { ModuleResult, ResultsSummary } from "@/lib/progress/contract";
+import { fetchResults } from "@/app/progress/actions";
 
 const pad = (n: number) => String(n).padStart(2, "0");
+const fmt = (t: number) => {
+  const d = new Date(t);
+  return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+};
 
-function Pill({ kind, children }: { kind: "full" | "part" | "none"; children: React.ReactNode }) {
-  const cls = {
-    full: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400",
-    part: "bg-amber-500/15 text-amber-700 dark:text-amber-400",
-    none: "bg-zinc-500/15 text-zinc-500 dark:text-zinc-400",
-  }[kind];
-  return <span className={`ml-1 inline-block rounded-full px-2 text-xs font-semibold ${cls}`}>{children}</span>;
-}
+type State =
+  | { status: "loading" }
+  | { status: "error"; message: string }
+  | { status: "ready"; lessons: Lesson[]; data: ResultsSummary };
 
+/** Kết quả học tập của user đang đăng nhập, lấy qua server action → gateway → DB. */
 export default function Results() {
-  const rows = ORDER.map(([id, name, group]) => {
-    const runs = D.hist.filter((x) => x.l === id);
-    const best = runs.reduce<(typeof runs)[number] | null>((b, x) => (!b || x.s > b.s ? x : b), null);
-    const labs = D.labs[id] ?? [];
-    const ld = labs.filter(Boolean).length;
-    const flags = Object.values(D.flag[id] ?? {}).filter(Boolean).length;
-    return { id, name, group, best, tries: runs.length, ld, lt: labs.length, flags };
-  });
+  const [state, setState] = useState<State>({ status: "loading" });
 
-  const done = rows.filter((r) => r.best);
-  const tQ = done.reduce((a, r) => a + r.best!.s, 0);
-  const tQn = done.reduce((a, r) => a + r.best!.n, 0);
-  const nDone = done.length;
-  const tL = rows.reduce((a, r) => a + r.ld, 0);
-  const tLn = rows.reduce((a, r) => a + r.lt, 0);
+  useEffect(() => {
+    let alive = true;
+    Promise.all([loadEngine(), fetchResults()]).then(
+      ([engine, r]) =>
+        alive &&
+        setState(
+          r.ok
+            ? { status: "ready", lessons: engine.lessons, data: r.data }
+            : { status: "error", message: r.message ?? "Lỗi không xác định." },
+        ),
+      (e) => alive && setState({ status: "error", message: String(e?.message ?? e) }),
+    );
+    return () => {
+      alive = false;
+    };
+  }, []);
 
-  const d = new Date(Math.max(...D.hist.map((x) => x.t)));
-  const last = `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
-  const cards = [
-    [`${tQ} / ${tQn}`, "Tổng điểm quiz tốt nhất"],
-    [`${nDone} / ${ORDER.length}`, "Bài đã làm quiz"],
-    [`${tL} / ${tLn}`, "Lab đã hoàn thành"],
-    [`${Math.round((tL / tLn) * 100)}%`, "Tỷ lệ lab"],
+  if (state.status === "loading") return <p className="p-5 text-sm text-zinc-500">Đang tải kết quả…</p>;
+  if (state.status === "error")
+    return (
+      <p role="alert" className="p-5 text-sm text-red-600">
+        Không tải được kết quả: {state.message}
+      </p>
+    );
+
+  const { lessons, data } = state;
+  const byId = new Map<string, ModuleResult>(data.modules.map((m) => [m.lessonId, m]));
+  const rows = lessons.map((l) => ({ lesson: l, m: byId.get(l.id) }));
+
+  const withQuiz = rows.filter((r) => r.m?.quizBest);
+  const sumScore = withQuiz.reduce((a, r) => a + r.m!.quizBest!.score, 0);
+  const sumTotal = withQuiz.reduce((a, r) => a + r.m!.quizBest!.total, 0);
+  const labsPassed = rows.reduce((a, r) => a + (r.m?.labsPassed ?? 0), 0);
+  const labsTotal = lessons.reduce((a, l) => a + l.lab.items.length, 0);
+  const debugsSolved = rows.reduce((a, r) => a + (r.m?.debugsSolved ?? 0), 0);
+  const debugsTotal = lessons.reduce((a, l) => a + l.debugs.length, 0);
+  const cards: [string, string][] = [
+    [`${sumScore} / ${sumTotal}`, "Tổng điểm quiz tốt nhất"],
+    [`${withQuiz.length} / ${lessons.length}`, "Bài đã làm quiz"],
+    [`${labsPassed} / ${labsTotal}`, "Lab đã đạt"],
+    [`${debugsSolved} / ${debugsTotal}`, "Bài fix lỗi đã đạt"],
   ];
 
   return (
     <div className="w-full px-5 py-4">
       <h1 className="text-lg font-semibold">Kết quả khoá học VPS Linux</h1>
       <p className="mb-4 text-sm text-zinc-500">
-        Ảnh chụp lúc 08/11/2026 20:04 (giờ VN). Lần làm quiz gần nhất: {last}.
+        {data.syncedAt ? `Đồng bộ lần cuối: ${fmt(data.syncedAt)}.` : "Chưa có dữ liệu đồng bộ."}
       </p>
       <div className="mb-4 grid grid-cols-[repeat(auto-fit,minmax(160px,1fr))] gap-2.5">
         {cards.map(([v, l]) => (
-          <div key={l} className="rounded-xl border border-black/10 bg-white px-3.5 py-3 dark:border-white/10 dark:bg-zinc-900">
-            <b className="block text-xl">{v}</b>
-            <span className="text-xs text-zinc-500">{l}</span>
-          </div>
+          <StatCard key={l} value={v} label={l} />
         ))}
       </div>
-      <div className="overflow-x-auto rounded-xl border border-black/10 bg-white dark:border-white/10 dark:bg-zinc-900">
+      <Card className="overflow-x-auto">
         <table className="w-full border-collapse text-sm">
           <thead>
             <tr className="bg-zinc-500/10 text-left text-xs text-zinc-500">
@@ -79,49 +87,58 @@ export default function Results() {
               <th className="p-2.5 text-right">Quiz (điểm tốt nhất)</th>
               <th className="p-2.5 text-right">Số lần làm</th>
               <th className="p-2.5">Lab</th>
-              <th className="p-2.5 text-right">Câu đánh dấu</th>
+              <th className="p-2.5 text-right">Fix lỗi</th>
+              <th className="p-2.5 text-right">Câu sai / đánh dấu</th>
             </tr>
           </thead>
           <tbody>
-            {rows.map((r) => (
-              <tr key={r.id} className="border-t border-black/10 align-top dark:border-white/10">
-                <td className="p-2.5">
-                  <div>{r.name}</div>
-                  <div className="text-xs text-zinc-500">{r.group}</div>
-                </td>
-                <td className="whitespace-nowrap p-2.5 text-right">
-                  {r.best ? (
-                    <>
-                      {r.best.s} / {r.best.n}
-                      <Pill kind={r.best.s === r.best.n ? "full" : "part"}>
-                        {r.best.s === r.best.n ? "đạt tối đa" : "chưa tối đa"}
-                      </Pill>
-                    </>
-                  ) : (
-                    <Pill kind="none">chưa làm</Pill>
-                  )}
-                </td>
-                <td className="p-2.5 text-right">{r.tries}</td>
-                <td className="p-2.5">
-                  {r.lt ? (
-                    <>
-                      {r.ld} / {r.lt}
-                      <div className="mt-1 h-1.5 min-w-[90px] overflow-hidden rounded bg-zinc-500/20">
-                        <i className="block h-full bg-blue-600 dark:bg-blue-400" style={{ width: `${Math.round((r.ld / r.lt) * 100)}%` }} />
-                      </div>
-                    </>
-                  ) : (
-                    <Pill kind="none">chưa có</Pill>
-                  )}
-                </td>
-                <td className="p-2.5 text-right">{r.flags}</td>
-              </tr>
-            ))}
+            {rows.map(({ lesson: l, m }) => {
+              const best = m?.quizBest;
+              const labs = l.lab.items.length;
+              const labDone = m?.labsPassed ?? 0;
+              return (
+                <tr key={l.id} className="border-t border-black/10 align-top dark:border-white/10">
+                  <td className="p-2.5">
+                    <div>{l.title}</div>
+                    <div className="text-xs text-zinc-500">{l.group}</div>
+                  </td>
+                  <td className="whitespace-nowrap p-2.5 text-right">
+                    {best ? (
+                      <>
+                        {best.score} / {best.total}
+                        <Pill kind={best.score === best.total ? "full" : "part"}>
+                          {best.score === best.total ? "đạt tối đa" : "chưa tối đa"}
+                        </Pill>
+                      </>
+                    ) : (
+                      <Pill kind="none">chưa làm</Pill>
+                    )}
+                  </td>
+                  <td className="p-2.5 text-right">{m?.quizAttempts ?? 0}</td>
+                  <td className="p-2.5">
+                    {labs ? (
+                      <>
+                        {labDone} / {labs}
+                        <ProgressBar value={labDone} max={labs} className="mt-1 min-w-[90px]" />
+                      </>
+                    ) : (
+                      <Pill kind="none">chưa có</Pill>
+                    )}
+                  </td>
+                  <td className="p-2.5 text-right">
+                    {m?.debugsSolved ?? 0} / {l.debugs.length}
+                  </td>
+                  <td className="p-2.5 text-right">
+                    {m?.wrongTotal ?? 0} / {m?.flagged ?? 0}
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
-      </div>
+      </Card>
       <p className="mt-3 text-xs text-zinc-500">
-        Số liệu là ảnh chụp tiến độ, không tự cập nhật.
+        Kết quả lưu trong cơ sở dữ liệu theo tài khoản đang đăng nhập ({data.tests.length} lần test gần nhất).
       </p>
     </div>
   );

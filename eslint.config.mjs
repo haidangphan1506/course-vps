@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Engine mô phỏng shell (JS thuần, port từ course.html).
+    "lib/course/engine/**",
   ]),
 ]);
 

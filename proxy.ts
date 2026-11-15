@@ -6,7 +6,7 @@ export async function proxy(request: NextRequest) {
   const ok = await verifyToken(request.cookies.get(COOKIE)?.value);
   const { pathname } = request.nextUrl;
 
-  if (pathname === "/login") {
+  if (pathname === "/login" || pathname === "/register") {
     return ok ? NextResponse.redirect(new URL("/", request.url)) : NextResponse.next();
   }
   if (ok) return NextResponse.next();

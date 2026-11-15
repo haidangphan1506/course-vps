@@ -1,9 +1,11 @@
 "use server";
 
 import { timingSafeEqual } from "node:crypto";
-import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
-import { COOKIE, MAX_AGE, createToken } from "@/lib/session";
+import { clearApiToken, clearSession, setApiToken, setSession } from "@/lib/auth";
+import { env } from "@/lib/env";
+import { authService } from "@/services";
+
+export type AuthState = { error?: string; user?: string; email?: string } | undefined;
 
 function same(a: string, b: string) {
   const x = Buffer.from(a);
@@ -11,25 +13,26 @@ function same(a: string, b: string) {
   return x.length === y.length && timingSafeEqual(x, y);
 }
 
-export async function login(_: string | undefined, formData: FormData) {
-  const user = String(formData.get("username") ?? "");
+export async function login(_: AuthState, formData: FormData): Promise<AuthState> {
+  const user = String(formData.get("email") ?? "");
   const pass = String(formData.get("password") ?? "");
-  const u = process.env.AUTH_USER;
-  const p = process.env.AUTH_PASSWORD;
-  if (!u || !p) return "Server chưa cấu hình AUTH_USER / AUTH_PASSWORD.";
-  if (!same(user, u) || !same(pass, p)) return "Sai tên đăng nhập hoặc mật khẩu.";
+  const u = env.authUser;
+  const p = env.authPassword;
+  const envOk = !!u && !!p && same(user, u) && same(pass, p);
+  if (!envOk) {
+    const r = await authService.login(user, pass);
+    if (!r.ok) return { error: r.message ?? "Sai email hoặc mật khẩu.", email: user };
+    await setApiToken((r.data as { accessToken: string }).accessToken);
+  } else {
+    // Tài khoản cấu hình trong env không có phiên gateway.
+    await clearApiToken();
+  }
 
-  (await cookies()).set(COOKIE, await createToken(user), {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-    path: "/",
-    maxAge: MAX_AGE,
-  });
-  redirect("/");
+  await setSession(user);
+  return { user };
 }
 
 export async function logout() {
-  (await cookies()).delete(COOKIE);
-  redirect("/login");
+  await clearSession();
+  await clearApiToken();
 }
