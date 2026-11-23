@@ -7,7 +7,7 @@ import Tabs from "@/components/ui/Tabs";
 import { loadEngine } from "@/lib/course/engine";
 import { debugDone, done, labDone, quizDone, total } from "@/lib/course/progress";
 import type { CourseTab, Engine } from "@/lib/course/types";
-import { syncProgress } from "@/app/progress/actions";
+import { useProgressSync } from "@/lib/course/useProgressSync";
 import { getParam, setParams } from "@/lib/url-state";
 import { navigate, restore } from "@/store/courseSlice";
 import { WaitForPersist } from "@/store/StoreProvider";
@@ -90,18 +90,7 @@ function Course({ engine }: { engine: Engine }) {
     } catch {}
   }, [dispatch]);
 
-  // Đồng bộ kết quả qua server action → gateway → DB (theo user đăng nhập), gom thay đổi bằng debounce.
-  const { labs, quiz, debugs, hist, wrong, flag } = p;
-  useEffect(() => {
-    const debugModule: Record<string, string> = {};
-    for (const l of lessons) for (const d of l.debugs) debugModule[d.id] = l.id;
-    const t = setTimeout(() => {
-      syncProgress({ labs, quiz, debugs, hist, wrong, flag, debugModule }).then((r) => {
-        if (!r.ok) console.warn("Không đồng bộ được tiến độ:", r.message);
-      });
-    }, 1500);
-    return () => clearTimeout(t);
-  }, [lessons, labs, quiz, debugs, hist, wrong, flag]);
+  useProgressSync(lessons);
 
   const go = (id: string, tab: CourseTab = "theory", filter?: QuizFilter) => {
     dispatch(navigate({ cur: id, tab }));

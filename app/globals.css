@@ -1,5 +1,19 @@
 @import "tailwindcss";
 
+/*
+ * dark: theo hệ thống như cũ, trừ khi một phần tử cha đặt data-theme (giao diện /learn có nút đổi theme).
+ */
+@custom-variant dark {
+  @media (prefers-color-scheme: dark) {
+    &:not(:where([data-theme="light"], [data-theme="light"] *)) {
+      @slot;
+    }
+  }
+  &:where([data-theme="dark"], [data-theme="dark"] *) {
+    @slot;
+  }
+}
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
