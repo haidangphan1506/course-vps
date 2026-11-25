@@ -5,9 +5,11 @@ RUN apk add --no-cache libc6-compat
 
 # --- Cài dependencies ---
 FROM base AS deps
+COPY --from=oven/bun:1-alpine /usr/local/bin/bun /usr/local/bin/bun
 WORKDIR /app
-COPY package.json package-lock.json ./
-RUN npm ci
+COPY package.json bun.lock ./
+RUN --mount=type=cache,target=/root/.bun/install/cache \
+    bun install --frozen-lockfile
 
 # --- Build ---
 FROM base AS builder
